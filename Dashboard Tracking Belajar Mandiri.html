@@ -1,0 +1,2187 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>JUDUL TULIS DISINI • Study & Mastery Tracker</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+          },
+          colors: {
+            navy: {
+              950: '#070F1E',
+              900: '#0B172A',
+              800: '#132440',
+              700: '#1D3557',
+            },
+            emerald: {
+              550: '#0D9468',
+            }
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background-color: #F1F5F9;
+      color: #0F172A;
+      overflow-x: hidden;
+    }
+    /* Hide horizontal scrollbar on tab navigation while preserving swipe/scroll */
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+    /* Flashcard 3D Flip Animation */
+    .perspective-1000 {
+      perspective: 1000px;
+    }
+    .transform-style-3d {
+      transform-style: preserve-3d;
+      transition: transform 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    .backface-hidden {
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
+    }
+    .rotate-y-180 {
+      transform: rotateY(180deg);
+    }
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #E2E8F0;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #94A3B8;
+      border-radius: 9999px;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col">
+  <!-- FLOATING TIMER NOTCH (MUNCUL SAAT TIMER AKTIF & BLOK TIMER TIDAK TERLIHAT) -->
+  <div id="floatingTimerNotch" class="fixed top-3 left-1/2 -translate-x-1/2 z-50 hidden transition-all duration-300 w-[94%] max-w-lg">
+    <div class="bg-navy-950/95 backdrop-blur-md text-white px-4 py-2.5 rounded-full shadow-2xl border border-emerald-500/50 flex flex-col gap-1.5">
+      <div class="flex items-center justify-between gap-2">
+        <!-- Area Tengah / Kiri yang Dapat Diklik untuk Scroll ke Blok Timer -->
+        <div onclick="scrollToTimerBlock()" title="Klik untuk kembali ke blok Study Timer" class="flex-1 flex items-center justify-between gap-2 cursor-pointer group rounded-full px-1.5 py-0.5 hover:bg-white/10 transition">
+          <div class="flex items-center gap-2 min-w-0">
+            <span id="notchStatusDot" class="w-2 h-2 rounded-full bg-emerald-400 animate-ping shrink-0"></span>
+            <span class="sm:hidden text-[11px] font-extrabold uppercase tracking-wider text-emerald-300 group-hover:text-white shrink-0">LIVE</span>
+            <span class="hidden sm:inline text-[11px] font-bold uppercase tracking-wider text-emerald-300 group-hover:text-white truncate">Study Timer</span>
+            <span id="notchTargetBadge" class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-white/10 text-slate-200 shrink-0">30 Mnt</span>
+          </div>
+          <span id="notchTimerDisplay" class="font-mono font-extrabold text-base sm:text-lg tracking-wider text-white tabular-nums shrink-0">30:00</span>
+        </div>
+
+        <!-- Tombol Kontrol Notch: Play/Jeda & Reset -->
+        <div class="flex items-center gap-1.5 shrink-0">
+          <button id="btnNotchToggle" type="button" onclick="toggleTimer()" title="Mulai / Jeda Timer" class="px-2.5 py-1 rounded-full bg-amber-500 hover:bg-amber-400 text-navy-950 text-[11px] font-extrabold transition flex items-center gap-1">
+            <span>Jeda</span>
+          </button>
+          <button type="button" onclick="resetTimer()" title="Reset Timer" class="p-1.5 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-600 transition">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+          </button>
+        </div>
+      </div>
+      <!-- Notch Progress Bar -->
+      <div onclick="scrollToTimerBlock()" title="Klik untuk kembali ke blok Study Timer" class="w-full bg-slate-800 rounded-full h-1.5 overflow-hidden cursor-pointer">
+        <div id="notchProgressBar" class="bg-gradient-to-r from-emerald-400 to-sky-400 h-1.5 rounded-full transition-all duration-200" style="width: 0%"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOP HEADER & STUDY TIMER -->
+  <header id="mainTopHeader" class="bg-gradient-to-r from-navy-950 via-navy-900 to-navy-800 text-white shadow-lg border-b border-slate-700/60">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5">
+      <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-5">
+        <!-- Editable Title & Quick Action -->
+        <div class="space-y-2 flex-1 min-w-0">
+          <div class="group relative flex items-center gap-2.5 max-w-full">
+            <h1
+              id="editableMainTitle"
+              contenteditable="true"
+              spellcheck="false"
+              onblur="saveCustomTitle()"
+              onkeydown="handleTitleKeydown(event)"
+              title="Klik untuk mengedit judul"
+              class="text-xl sm:text-2xl lg:text-3xl font-extrabold tracking-tight text-white outline-none rounded-lg px-2 -mx-2 py-1 border border-transparent hover:border-white/25 focus:border-emerald-400 focus:bg-white/10 transition cursor-text break-words min-w-0"
+            >JUDUL TULIS DISINI</h1>
+            <button
+              type="button"
+              onclick="focusEditableTitle()"
+              title="Edit Judul"
+              class="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-slate-300 hover:text-white transition shrink-0"
+            >
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
+            </button>
+          </div>
+
+          <!-- Header Quick Action Button -->
+          <div class="flex flex-wrap items-center gap-2 pt-0.5">
+            <button onclick="openBackupRestoreModal()" class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold bg-white/10 hover:bg-white/20 text-white border border-white/20 transition shadow-sm">
+              <span>💾</span>
+              <span>Save / Load Progress</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Built-in Study Timer Widget -->
+        <div id="studyTimerCard" class="w-full lg:w-auto bg-navy-950/70 backdrop-blur border border-slate-700/80 rounded-2xl p-3.5 sm:p-4 flex flex-col sm:flex-row items-center justify-between lg:justify-start gap-3.5 sm:gap-4 shadow-inner transition-all">
+          <div class="text-center sm:text-left">
+            <div class="flex items-center justify-center sm:justify-start gap-2 mb-1">
+              <span class="text-[11px] uppercase tracking-wider font-bold text-emerald-400">Study Timer</span>
+              <span id="timerLiveBadge" class="hidden inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-500/20 text-emerald-300 border border-emerald-400/40">
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span>
+                LIVE
+              </span>
+              <select id="timerModeSelect" onchange="changeTimerMode()" class="bg-navy-800 text-xs font-semibold text-slate-100 border border-slate-600 rounded-md px-2.5 py-1 focus:outline-none focus:border-emerald-400">
+                <option value="30">30 Menit</option>
+                <option value="60">60 Menit</option>
+                <option value="90">90 Menit</option>
+                <option value="120">120 Menit</option>
+              </select>
+            </div>
+            <div id="timerDisplay" class="text-3xl sm:text-4xl font-extrabold font-mono tracking-wider text-white tabular-nums">
+              30:00
+            </div>
+          </div>
+
+          <div class="flex flex-wrap items-center justify-center gap-2">
+            <button id="btnTimerToggle" onclick="toggleTimer()" class="px-4 py-2.5 rounded-xl font-bold text-sm bg-emerald-600 hover:bg-emerald-500 text-white shadow-md shadow-emerald-950/50 transition flex items-center gap-1.5">
+              <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z"/></svg>
+              <span>Mulai</span>
+            </button>
+            <button id="btnCommitSession" onclick="commitCurrentTimerSession()" title="Catat durasi sesi berjalan ke log hari ini" class="hidden px-3 py-2.5 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-400/40 text-xs font-bold transition">
+              ✓ Catat Sesi
+            </button>
+            <button onclick="resetTimer()" title="Reset Timer" class="p-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-600 transition">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+            </button>
+            <button onclick="openManualLogModal()" title="Tambah Menit Manual" class="px-3 py-2.5 rounded-xl bg-sky-600/20 hover:bg-sky-600/30 text-sky-300 border border-sky-500/40 text-xs font-semibold transition">
+              + Menit
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- QUICK STATS BAR -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5 mt-5">
+        <!-- Stat 1: Today's Status -->
+        <div class="bg-white/10 backdrop-blur border border-white/10 rounded-xl p-3.5 flex items-center justify-between">
+          <div>
+            <p class="text-xs text-slate-300 font-medium">Status Belajar Hari Ini</p>
+            <p id="todayDateLabel" class="text-[11px] text-slate-400 mb-1">Rabu, 18 Nov 2026</p>
+            <div id="todayStatusBadge" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold bg-amber-500/20 text-amber-300 border border-amber-400/30">
+              Belum Belajar
+            </div>
+          </div>
+          <button id="btnCheckInToday" onclick="toggleTodayCheckIn()" class="px-3 py-2 rounded-xl text-xs font-bold bg-emerald-500 hover:bg-emerald-400 text-navy-950 transition shadow">
+            Check-In ✓
+          </button>
+        </div>
+
+        <!-- Stat 2: Study Minutes Today vs Target -->
+        <div class="bg-white/10 backdrop-blur border border-white/10 rounded-xl p-3.5">
+          <div class="flex justify-between items-center mb-1">
+            <p class="text-xs text-slate-300 font-medium">Durasi Hari Ini vs Target</p>
+            <span id="todayDayTypeBadge" class="text-[10px] font-bold px-2 py-0.5 rounded bg-slate-700 text-slate-200">Target 30m</span>
+          </div>
+          <div class="flex items-baseline gap-1.5">
+            <span id="todayMinutesText" class="text-2xl font-extrabold text-white">0</span>
+            <span id="todayTargetText" class="text-xs text-slate-300">/ 30 menit</span>
+          </div>
+          <div class="w-full bg-slate-700/80 rounded-full h-2 mt-2 overflow-hidden">
+            <div id="todayProgressBar" class="bg-emerald-400 h-2 rounded-full transition-all duration-500" style="width: 0%"></div>
+          </div>
+        </div>
+
+        <!-- Stat 3: Total Themes Mastered -->
+        <div class="bg-white/10 backdrop-blur border border-white/10 rounded-xl p-3.5">
+          <div class="flex justify-between items-center mb-1">
+            <p class="text-xs text-slate-300 font-medium">Total Tema Dikuasai</p>
+            <span id="masteryPercentText" class="text-xs font-bold text-emerald-300">0%</span>
+          </div>
+          <div class="flex items-baseline gap-1.5">
+            <span id="masteredCountText" class="text-2xl font-extrabold text-white">0</span>
+            <span id="totalThemesCountText" class="text-xs text-slate-300">/ 39 modul (Fase 1 & 2)</span>
+          </div>
+          <div class="w-full bg-slate-700/80 rounded-full h-2 mt-2 overflow-hidden">
+            <div id="masteryProgressBar" class="bg-sky-400 h-2 rounded-full transition-all duration-500" style="width: 0%"></div>
+          </div>
+        </div>
+
+        <!-- Stat 4: Daily Streak -->
+        <div class="bg-white/10 backdrop-blur border border-white/10 rounded-xl p-3.5 flex items-center justify-between">
+          <div>
+            <p class="text-xs text-slate-300 font-medium">Streak Konsistensi</p>
+            <div class="flex items-baseline gap-1.5 mt-1">
+              <span id="streakCountText" class="text-2xl font-extrabold text-amber-300">0</span>
+              <span class="text-xs text-slate-300">hari berturut</span>
+            </div>
+            <p class="text-[11px] text-slate-400 mt-0.5">Minggu Off tidak memutus streak</p>
+          </div>
+          <div class="w-11 h-11 rounded-2xl bg-amber-500/20 border border-amber-400/30 flex items-center justify-center text-2xl">
+            🔥
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- NAVIGATION TABS -->
+  <nav class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex overflow-x-auto no-scrollbar gap-1 sm:gap-2 py-2" role="tablist">
+        <button onclick="switchTab('tracker')" id="tab-btn-tracker" class="tab-btn active-tab whitespace-nowrap px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-2 transition">
+          <span>📅</span> Jadwal & Mastery Tracker
+        </button>
+        <button onclick="switchTab('errorlog')" id="tab-btn-errorlog" class="tab-btn whitespace-nowrap px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold text-slate-600 hover:bg-slate-100 flex items-center gap-2 transition">
+          <span>🎯</span> Tabel Error Log & Weakspot
+          <span id="badgeErrorCount" class="px-1.5 py-0.5 text-[10px] rounded-full bg-rose-100 text-rose-700 font-bold">0</span>
+        </button>
+        <button onclick="switchTab('flashcards')" id="tab-btn-flashcards" class="tab-btn whitespace-nowrap px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold text-slate-600 hover:bg-slate-100 flex items-center gap-2 transition">
+          <span>🗂️</span> Flashcard Materi Kunci
+          <span id="badgeFlashcardCount" class="px-1.5 py-0.5 text-[10px] rounded-full bg-emerald-100 text-emerald-700 font-bold">0</span>
+        </button>
+        <button onclick="switchTab('sync')" id="tab-btn-sync" class="tab-btn whitespace-nowrap px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold text-slate-600 hover:bg-slate-100 flex items-center gap-2 transition">
+          <span>💾</span> Save / Load Progress
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- MAIN CONTENT CONTAINER -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+
+    <!-- ===================================================================== -->
+    <!-- TAB 1: JADWAL & MASTERY TRACKER                                       -->
+    <!-- ===================================================================== -->
+    <section id="tab-tracker" class="tab-panel space-y-6">
+      <!-- KALENDER BELAJAR AKTIF INTERAKTIF (MONTHLY STREAK CALENDAR) -->
+      <div class="bg-white rounded-2xl border border-slate-200 p-4 sm:p-5 shadow-sm">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-slate-100">
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="w-2.5 h-6 rounded-full bg-emerald-600 inline-block"></span>
+              <h2 class="text-base sm:text-lg font-extrabold text-navy-900">
+                Kalender Belajar Aktif & Visualisasi Streak
+              </h2>
+            </div>
+            <p class="text-xs sm:text-sm text-slate-600 mt-1">
+              Klik tanggal mana saja untuk menandai kehadiran belajar (✓). Target harian mengikuti durasi timer aktif (<strong id="calActiveTargetText">30 menit</strong>), <strong>Minggu Off</strong> tidak memutus streak.
+            </p>
+          </div>
+
+          <!-- Month Navigation & Monthly Summary -->
+          <div class="flex flex-wrap items-center gap-2 sm:gap-3">
+            <div class="px-3 py-1.5 rounded-xl bg-emerald-50 border border-emerald-200 text-xs font-bold text-emerald-800">
+              Bulan Ini: <span id="calMonthActiveCount">0</span> Hari Aktif
+            </div>
+            <div class="flex items-center bg-slate-100 rounded-xl p-1 border border-slate-200">
+              <button onclick="changeCalendarMonth(-1)" title="Bulan Sebelumnya" class="p-1.5 rounded-lg hover:bg-white text-slate-700 font-bold text-xs transition">
+                ◀
+              </button>
+              <span id="calMonthYearTitle" class="px-2 sm:px-3 text-xs sm:text-sm font-extrabold text-navy-900 min-w-[112px] sm:min-w-[130px] text-center">
+                November 2026
+              </span>
+              <button onclick="changeCalendarMonth(1)" title="Bulan Berikutnya" class="p-1.5 rounded-lg hover:bg-white text-slate-700 font-bold text-xs transition">
+                ▶
+              </button>
+            </div>
+            <button onclick="jumpCalendarToToday()" class="px-3 py-2 rounded-xl bg-navy-900 hover:bg-navy-800 text-white text-xs font-bold transition">
+              Hari Ini
+            </button>
+          </div>
+        </div>
+
+        <!-- Calendar Weekday Headers (Senin - Minggu) -->
+        <div class="grid grid-cols-7 gap-1 sm:gap-2 mt-4 text-center text-[10px] sm:text-[11px] font-extrabold uppercase tracking-tight sm:tracking-wider text-slate-500">
+          <div class="py-1">Sen</div>
+          <div class="py-1">Sel</div>
+          <div class="py-1">Rab</div>
+          <div class="py-1">Kam</div>
+          <div class="py-1">Jum</div>
+          <div class="py-1 text-sky-700">Sab<span class="hidden sm:inline"> (60m)</span></div>
+          <div class="py-1 text-rose-600">Min<span class="hidden sm:inline"> (Off)</span></div>
+        </div>
+
+        <!-- Interactive Calendar Days Grid -->
+        <div id="interactiveCalendarGrid" class="grid grid-cols-7 gap-1 sm:gap-2 mt-1.5">
+          <!-- Populated dynamically by JS -->
+        </div>
+
+        <!-- Legend & Streak Heatmap Bar -->
+        <div class="flex flex-wrap items-center justify-between gap-3 mt-4 pt-3 border-t border-slate-100 text-[11px] text-slate-600">
+          <div class="flex flex-wrap items-center gap-3">
+            <span class="inline-flex items-center gap-1.5">
+              <span class="w-3.5 h-3.5 rounded bg-emerald-500 inline-block"></span> Selesai Belajar (✓)
+            </span>
+            <span class="inline-flex items-center gap-1.5">
+              <span class="w-3.5 h-3.5 rounded bg-sky-100 border border-sky-400 inline-block"></span> Sedang Berjalan (&lt; Target)
+            </span>
+            <span class="inline-flex items-center gap-1.5">
+              <span class="w-3.5 h-3.5 rounded bg-white border-2 border-navy-900 inline-block"></span> Hari Ini
+            </span>
+            <span class="inline-flex items-center gap-1.5">
+              <span class="w-3.5 h-3.5 rounded bg-rose-50 border border-rose-200 inline-block"></span> Minggu Off (Istirahat)
+            </span>
+          </div>
+          <span class="font-semibold text-navy-800">💡 Klik kotak tanggal untuk ceklis / batalkan kehadiran harian</span>
+        </div>
+      </div>
+
+      <!-- Filter Controls (3 Fase Utama: TWK - TIU - TKP) -->
+      <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-3 bg-white p-3.5 rounded-2xl border border-slate-200 shadow-sm">
+        <div class="flex flex-wrap items-center gap-1.5 sm:gap-2">
+          <span class="text-xs font-bold text-slate-500 uppercase tracking-wider mr-1">Fase:</span>
+          <button onclick="setTrackerFilter('phase', 'ALL')" id="filter-phase-ALL" class="filter-phase-btn px-3 py-1.5 rounded-lg text-xs font-bold bg-navy-900 text-white transition">
+            Semua Fase (26)
+          </button>
+          <button onclick="setTrackerFilter('phase', 'FASE1_TWK')" id="filter-phase-FASE1_TWK" class="filter-phase-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200 transition">
+            Fase 1: TWK (8 Tema)
+          </button>
+          <button onclick="setTrackerFilter('phase', 'FASE2_TIU')" id="filter-phase-FASE2_TIU" class="filter-phase-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200 transition">
+            Fase 2: TIU (11 Tema)
+          </button>
+          <button onclick="setTrackerFilter('phase', 'FASE3_TKP')" id="filter-phase-FASE3_TKP" class="filter-phase-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200 transition">
+            Fase 3: TKP (6 Tema + TO)
+          </button>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-2">
+          <span class="text-xs font-bold text-slate-500 uppercase tracking-wider mr-1">Status:</span>
+          <select id="filterStatusSelect" onchange="setTrackerFilter('status', this.value)" class="text-xs font-semibold bg-slate-100 border border-slate-200 rounded-lg px-3 py-1.5 text-slate-700 focus:outline-none focus:border-emerald-500">
+            <option value="ALL">Semua Status</option>
+            <option value="IN_PROGRESS">Sedang Dipelajari</option>
+            <option value="NOT_STARTED">Belum Mulai</option>
+            <option value="MASTERED">Sudah Dikuasai ✓</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Modules List Container -->
+      <div id="modulesContainer" class="space-y-4"></div>
+    </section>
+
+    <!-- ===================================================================== -->
+    <!-- TAB 2: ERROR LOG & WEAKSPOT TRACKER                                   -->
+    <!-- ===================================================================== -->
+    <section id="tab-errorlog" class="tab-panel hidden space-y-5">
+      <div class="bg-white rounded-2xl border border-slate-200 p-4 sm:p-5 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h2 class="text-base sm:text-lg font-extrabold text-navy-900">Tabel Error Log & Evaluasi Weakspot</h2>
+          <p class="text-xs sm:text-sm text-slate-600">Catat setiap pola soal yang salah atau menjebak, lalu ulangi hingga status berubah menjadi <strong>Sudah Dikuasai</strong>.</p>
+        </div>
+        <button onclick="openErrorModal()" class="px-4 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs sm:text-sm font-bold shadow transition shrink-0">
+          + Catat Weakspot Baru
+        </button>
+      </div>
+
+      <!-- Filter Bar for Error Log -->
+      <div class="flex flex-wrap items-center gap-2 bg-white p-3 rounded-xl border border-slate-200">
+        <input type="text" id="errorSearchInput" oninput="renderErrorLogTable()" placeholder="Cari tema, konsep salah, atau solusi..." class="flex-1 min-w-[200px] text-xs sm:text-sm px-3 py-2 rounded-lg border border-slate-200 focus:outline-none focus:border-emerald-500" />
+        <select id="errorCatFilter" onchange="renderErrorLogTable()" class="text-xs font-semibold bg-slate-100 border border-slate-200 rounded-lg px-3 py-2">
+          <option value="ALL">Semua Fase</option>
+          <option value="TWK">Fase 1: TWK</option>
+          <option value="TIU">Fase 2: TIU</option>
+          <option value="TKP">Fase 3: TKP</option>
+        </select>
+        <select id="errorStatusFilter" onchange="renderErrorLogTable()" class="text-xs font-semibold bg-slate-100 border border-slate-200 rounded-lg px-3 py-2">
+          <option value="ALL">Semua Status</option>
+          <option value="Perlu Review">Perlu Review ⚠️</option>
+          <option value="Sudah Dikuasai">Sudah Dikuasai ✅</option>
+        </select>
+      </div>
+
+      <!-- Responsive Table -->
+      <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse text-xs sm:text-sm">
+            <thead>
+              <tr class="bg-navy-900 text-white text-[11px] uppercase tracking-wider">
+                <th class="p-3.5 font-bold">Tanggal</th>
+                <th class="p-3.5 font-bold">Fase & Materi</th>
+                <th class="p-3.5 font-bold">Konsep / Soal Salah</th>
+                <th class="p-3.5 font-bold">Penyebab</th>
+                <th class="p-3.5 font-bold">Solusi / Trik Perbaikan</th>
+                <th class="p-3.5 font-bold">Status</th>
+                <th class="p-3.5 font-bold text-center">Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="errorLogTableBody" class="divide-y divide-slate-200"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================================================================== -->
+    <!-- TAB 3: FLASHCARD MATERI KUNCI                                         -->
+    <!-- ===================================================================== -->
+    <section id="tab-flashcards" class="tab-panel hidden space-y-5">
+      <div class="bg-white rounded-2xl border border-slate-200 p-4 sm:p-5 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h2 class="text-base sm:text-lg font-extrabold text-navy-900">Flashcard Materi Kunci & Hafalan Cepat</h2>
+          <p class="text-xs sm:text-sm text-slate-600">Klik kartu untuk membalik pertanyaan dan jawaban. Cocok untuk sesi belajar cepat di HP maupun laptop.</p>
+        </div>
+        <div class="flex flex-wrap items-center gap-2">
+          <select id="fcTopicFilter" onchange="filterFlashcards()" class="text-xs font-semibold bg-slate-100 border border-slate-200 rounded-xl px-3 py-2 max-w-[260px]">
+            <!-- Populated dynamically with optgroup FASE 1: TWK, FASE 2: TIU, FASE 3: TKP -->
+          </select>
+          <select id="fcMasteryFilter" onchange="filterFlashcards()" class="text-xs font-semibold bg-slate-100 border border-slate-200 rounded-xl px-3 py-2">
+            <option value="ALL">Semua Status</option>
+            <option value="REVIEW">Perlu Diulang</option>
+            <option value="MEMORIZED">Sudah Hafal ✓</option>
+          </select>
+          <button onclick="openAddFlashcardModal()" class="px-3.5 py-2 rounded-xl bg-navy-900 hover:bg-navy-800 text-white text-xs font-bold transition">
+            + Tambah Kartu
+          </button>
+        </div>
+      </div>
+
+      <!-- Flashcard Interactive Stage -->
+      <div class="max-w-2xl mx-auto space-y-4">
+        <div class="flex items-center justify-between gap-2 text-xs font-bold text-slate-500 px-1">
+          <span id="fcCounterText" class="shrink-0">0 Kartu</span>
+          <span id="fcTopicBadge" class="px-2.5 py-1 rounded-full bg-sky-100 text-sky-800 truncate max-w-[68%]">Semua Fase</span>
+        </div>
+
+        <div onclick="flipFlashcard()" class="perspective-1000 cursor-pointer select-none h-72 sm:h-80 w-full">
+          <div id="flashcardInner" class="relative w-full h-full transform-style-3d">
+            <!-- FRONT SIDE -->
+            <div class="absolute inset-0 backface-hidden bg-white rounded-3xl border-2 border-slate-200 shadow-lg p-5 sm:p-8 flex flex-col justify-between">
+              <div class="flex justify-between items-center gap-2">
+                <span class="text-[10px] sm:text-[11px] font-extrabold uppercase tracking-wider text-slate-400">PERTANYAAN / KONSEP</span>
+                <span id="fcStatusTagFront" class="text-[10px] sm:text-[11px] font-bold px-2.5 py-1 rounded-lg bg-amber-100 text-amber-800 shrink-0">Perlu Diulang</span>
+              </div>
+              <div class="my-auto text-center px-2 overflow-y-auto max-h-40">
+                <p id="fcFrontText" class="text-sm sm:text-xl font-extrabold text-navy-900 leading-snug break-words"></p>
+              </div>
+              <div class="text-center">
+                <p id="fcHintText" class="text-xs text-slate-500 italic mb-2 line-clamp-2"></p>
+                <span class="inline-block text-[11px] font-semibold text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full">👆 Klik kartu untuk melihat jawaban</span>
+              </div>
+            </div>
+
+            <!-- BACK SIDE -->
+            <div class="absolute inset-0 backface-hidden rotate-y-180 bg-gradient-to-br from-navy-900 to-navy-800 text-white rounded-3xl border-2 border-emerald-500/50 shadow-xl p-5 sm:p-8 flex flex-col justify-between">
+              <div class="flex justify-between items-center gap-2">
+                <span class="text-[10px] sm:text-[11px] font-extrabold uppercase tracking-wider text-emerald-300">JAWABAN & KUNCI LOGIKA</span>
+                <span class="text-[10px] sm:text-[11px] text-slate-300 shrink-0">Klik untuk kembali</span>
+              </div>
+              <div class="my-auto text-center px-2 overflow-y-auto max-h-44">
+                <p id="fcBackText" class="text-sm sm:text-lg font-semibold text-white leading-relaxed break-words"></p>
+              </div>
+              <div class="text-center text-[11px] text-slate-400">
+                Tandai penguasaan Anda menggunakan tombol di bawah
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Flashcard Controls -->
+        <div class="grid grid-cols-2 sm:flex sm:flex-wrap items-center justify-between gap-2 pt-2">
+          <button onclick="prevFlashcard()" class="order-2 sm:order-1 px-3.5 py-2.5 rounded-xl bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 text-xs sm:text-sm font-bold shadow-sm transition">
+            ← Sebelumnya
+          </button>
+
+          <div class="col-span-2 order-1 sm:order-2 flex items-center justify-center gap-2">
+            <button onclick="setFlashcardMastery(false)" class="flex-1 sm:flex-initial px-3.5 py-2.5 rounded-xl bg-amber-100 hover:bg-amber-200 text-amber-900 text-xs font-bold transition">
+              🔁 Perlu Diulang
+            </button>
+            <button onclick="setFlashcardMastery(true)" class="flex-1 sm:flex-initial px-3.5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold shadow transition">
+              ✅ Sudah Hafal
+            </button>
+          </div>
+
+          <button onclick="nextFlashcard()" class="order-3 px-3.5 py-2.5 rounded-xl bg-navy-900 hover:bg-navy-800 text-white text-xs sm:text-sm font-bold shadow-sm transition">
+            Selanjutnya →
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================================================================== -->
+    <!-- TAB 4: SAVE / LOAD PROGRESS                                           -->
+    <!-- ===================================================================== -->
+    <section id="tab-sync" class="tab-panel hidden space-y-6">
+      <div class="max-w-2xl mx-auto bg-white rounded-2xl border border-slate-200 p-5 sm:p-6 shadow-sm space-y-5">
+        <div>
+          <h2 class="text-lg font-extrabold text-navy-900">Save / Load Progress (.JSON)</h2>
+          <p class="text-xs sm:text-sm text-slate-600 mt-1">
+            Seluruh progres belajar, judul kustom, checklist mastery, timer harian, error log, dan flashcard tersimpan otomatis di browser perangkat ini. Gunakan fitur di bawah untuk mencadangkan atau memindahkan data antar perangkat.
+          </p>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+          <button onclick="exportDataJSON()" class="w-full py-3 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs sm:text-sm font-bold shadow transition flex items-center justify-center gap-2">
+            <span>⬇️ Save Progress (.JSON)</span>
+          </button>
+
+          <button onclick="openBackupRestoreModal()" class="w-full py-3 px-4 rounded-xl bg-navy-900 hover:bg-navy-800 text-white text-xs sm:text-sm font-bold shadow transition flex items-center justify-center gap-2">
+            <span>⬆️ Load Progress (.JSON)</span>
+          </button>
+        </div>
+
+        <div class="pt-4 border-t border-slate-100 flex justify-end">
+          <button onclick="openResetConfirmModal()" class="px-4 py-2 rounded-xl text-xs font-semibold text-rose-600 hover:bg-rose-50 border border-rose-200 transition">
+            Reset Semua Data ke Awal
+          </button>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ===================================================================== -->
+  <!-- MODALS (NO BROWSER ALERT/CONFIRM)                                     -->
+  <!-- ===================================================================== -->
+
+  <!-- Modal 1: Add/Edit Error Log (Dependent Dropdown Fase -> Materi) -->
+  <div id="errorModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 space-y-4">
+      <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+        <h3 id="errorModalTitle" class="text-base sm:text-lg font-extrabold text-navy-900">Catat Weakspot & Evaluasi Soal</h3>
+        <button onclick="closeModal('errorModal')" class="text-slate-400 hover:text-slate-600 font-bold text-lg">✕</button>
+      </div>
+      <form id="errorForm" onsubmit="saveErrorLog(event)" class="space-y-3 text-xs sm:text-sm">
+        <input type="hidden" id="errId" />
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">Tanggal</label>
+            <input type="date" id="errDate" required class="w-full px-3 py-2 rounded-xl border border-slate-300" />
+          </div>
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">1. Pilih Fase / Kategori</label>
+            <select id="errCategory" onchange="updateDependentMaterialDropdown('errCategory', 'errTheme')" required class="w-full px-3 py-2 rounded-xl border border-slate-300 bg-white font-semibold">
+              <option value="TWK">Fase 1: TWK</option>
+              <option value="TIU" selected>Fase 2: TIU</option>
+              <option value="TKP">Fase 3: TKP</option>
+            </select>
+          </div>
+        </div>
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">2. Pilih Materi / Tema (Al Faiz)</label>
+          <select id="errTheme" required class="w-full px-3 py-2 rounded-xl border border-slate-300 bg-white font-semibold">
+            <!-- Populated dynamically based on errCategory -->
+          </select>
+        </div>
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">Soal / Konsep yang Salah</label>
+          <textarea id="errConcept" rows="2" required placeholder="Tuliskan bentuk soal atau rumus yang keliru..." class="w-full px-3 py-2 rounded-xl border border-slate-300"></textarea>
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">Penyebab Kesalahan</label>
+            <select id="errCause" class="w-full px-3 py-2 rounded-xl border border-slate-300 bg-white">
+              <option value="Jebakan Soal">Jebakan Soal</option>
+              <option value="Salah Konsep">Salah Konsep</option>
+              <option value="Kurang Teliti">Kurang Teliti</option>
+              <option value="Kehabisan Waktu">Kehabisan Waktu</option>
+            </select>
+          </div>
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">Status Penguasaan</label>
+            <select id="errStatus" class="w-full px-3 py-2 rounded-xl border border-slate-300 bg-white">
+              <option value="Perlu Review">Perlu Review ⚠️</option>
+              <option value="Sudah Dikuasai">Sudah Dikuasai ✅</option>
+            </select>
+          </div>
+        </div>
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">Solusi / Catatan Perbaikan</label>
+          <textarea id="errSolution" rows="2" required placeholder="Trik cepat atau aturan baku agar tidak salah lagi..." class="w-full px-3 py-2 rounded-xl border border-slate-300"></textarea>
+        </div>
+        <div class="flex justify-end gap-2 pt-3 border-t border-slate-100">
+          <button type="button" onclick="closeModal('errorModal')" class="px-4 py-2 rounded-xl border border-slate-300 text-slate-700 font-semibold">Batal</button>
+          <button type="submit" class="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold">Simpan Evaluasi</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal 2: Manual Minutes Log -->
+  <div id="manualLogModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl border border-slate-200 space-y-4">
+      <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+        <h3 class="text-base font-extrabold text-navy-900">Tambah Durasi Belajar Manual</h3>
+        <button onclick="closeModal('manualLogModal')" class="text-slate-400 hover:text-slate-600 font-bold">✕</button>
+      </div>
+      <div class="space-y-3 text-xs sm:text-sm">
+        <p class="text-slate-600">Gunakan jika Anda belajar menggunakan buku fisik Al Faiz tanpa menyalakan timer layar.</p>
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">Tanggal</label>
+          <input type="date" id="manualLogDate" class="w-full px-3 py-2 rounded-xl border border-slate-300" />
+        </div>
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">Tambahan Menit Belajar</label>
+          <input type="number" id="manualLogMinutes" min="1" max="300" value="35" class="w-full px-3 py-2 rounded-xl border border-slate-300" />
+        </div>
+        <div class="flex gap-2 pt-1">
+          <button type="button" onclick="document.getElementById('manualLogMinutes').value=30" class="px-2.5 py-1 rounded-lg bg-slate-100 text-xs font-semibold">+30m</button>
+          <button type="button" onclick="document.getElementById('manualLogMinutes').value=60" class="px-2.5 py-1 rounded-lg bg-slate-100 text-xs font-semibold">+60m</button>
+          <button type="button" onclick="document.getElementById('manualLogMinutes').value=90" class="px-2.5 py-1 rounded-lg bg-slate-100 text-xs font-semibold">+90m</button>
+          <button type="button" onclick="document.getElementById('manualLogMinutes').value=120" class="px-2.5 py-1 rounded-lg bg-slate-100 text-xs font-semibold">+120m</button>
+        </div>
+        <div class="flex justify-end gap-2 pt-3 border-t border-slate-100">
+          <button type="button" onclick="closeModal('manualLogModal')" class="px-4 py-2 rounded-xl border border-slate-300 text-slate-700 font-semibold">Batal</button>
+          <button type="button" onclick="saveManualMinutes()" class="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold">Simpan Durasi</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 3: Add Flashcard -->
+  <div id="addFlashcardModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-200 space-y-4">
+      <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+        <h3 class="text-base font-extrabold text-navy-900">Buat Flashcard Materi Baru</h3>
+        <button onclick="closeModal('addFlashcardModal')" class="text-slate-400 hover:text-slate-600 font-bold">✕</button>
+      </div>
+      <form onsubmit="saveNewFlashcard(event)" class="space-y-3 text-xs sm:text-sm">
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">Fase</label>
+          <select id="newFcTopic" required class="w-full px-3 py-2 rounded-xl border border-slate-300 bg-white font-semibold">
+            <!-- Populated dynamically with optgroup FASE 1: TWK, FASE 2: TIU, FASE 3: TKP -->
+          </select>
+        </div>
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">Depan (Pertanyaan / Rumus)</label>
+          <textarea id="newFcFront" rows="2" required placeholder="Contoh: Rumus perbandingan berbalik nilai..." class="w-full px-3 py-2 rounded-xl border border-slate-300"></textarea>
+        </div>
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">Belakang (Jawaban / Penjelasan)</label>
+          <textarea id="newFcBack" rows="3" required placeholder="Tuliskan jawaban ringkas dan jelas..." class="w-full px-3 py-2 rounded-xl border border-slate-300"></textarea>
+        </div>
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">Petunjuk / Kata Kunci (Opsional)</label>
+          <input type="text" id="newFcHint" placeholder="Contoh: Kalikan sejajar, bukan kali silang" class="w-full px-3 py-2 rounded-xl border border-slate-300" />
+        </div>
+        <div class="flex justify-end gap-2 pt-3 border-t border-slate-100">
+          <button type="button" onclick="closeModal('addFlashcardModal')" class="px-4 py-2 rounded-xl border border-slate-300 text-slate-700 font-semibold">Batal</button>
+          <button type="submit" class="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold">Simpan Kartu</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal 4: Daily Attendance & Calendar Log -->
+  <div id="dailyCalendarModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-2xl w-full p-6 shadow-2xl border border-slate-200 space-y-4 max-h-[85vh] overflow-y-auto">
+      <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+        <div>
+          <h3 class="text-base sm:text-lg font-extrabold text-navy-900">Riwayat Kehadiran & Log Durasi Harian</h3>
+          <p class="text-xs text-slate-500">Target mengikuti template durasi timer aktif • Minggu Off</p>
+        </div>
+        <button onclick="closeModal('dailyCalendarModal')" class="text-slate-400 hover:text-slate-600 font-bold text-lg">✕</button>
+      </div>
+      <div id="dailyLogGrid" class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs">
+        <!-- Populated dynamically -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 5: Reset Confirmation -->
+  <div id="resetConfirmModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl border border-slate-200 space-y-4">
+      <h3 class="text-base font-extrabold text-rose-700">Konfirmasi Reset Semua Data</h3>
+      <p class="text-xs sm:text-sm text-slate-600">Apakah Anda yakin ingin menghapus seluruh progres ceklis tema, durasi timer, error log, dan mengembalikan aplikasi ke kondisi awal?</p>
+      <div class="flex justify-end gap-2 pt-2">
+        <button onclick="closeModal('resetConfirmModal')" class="px-4 py-2 rounded-xl border border-slate-300 text-xs font-bold text-slate-700">Batal</button>
+        <button onclick="executeFullReset()" class="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-xs font-bold text-white">Ya, Reset Semua</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 6: Save / Load Progress (.JSON) -->
+  <div id="backupRestoreModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 space-y-5 max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+        <div>
+          <h3 class="text-base sm:text-lg font-extrabold text-navy-900">Save / Load Progress</h3>
+          <p class="text-xs text-slate-500">Simpan atau muat seluruh progres belajar antar perangkat</p>
+        </div>
+        <button onclick="closeModal('backupRestoreModal')" class="text-slate-400 hover:text-slate-600 font-bold text-lg">✕</button>
+      </div>
+
+      <!-- Section 1: Save Progress -->
+      <div class="p-4 rounded-xl bg-emerald-50/70 border border-emerald-200 space-y-2.5">
+        <div class="flex items-center justify-between">
+          <h4 class="text-xs sm:text-sm font-extrabold text-emerald-950">1. Save Progress (.json)</h4>
+          <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-200 text-emerald-900">Unduh File</span>
+        </div>
+        <p class="text-xs text-emerald-800 leading-relaxed">
+          Mengunduh seluruh judul kustom, progres jadwal & checklist 6 siklus, log tanggal & menit kalender, error log, serta flashcard ke file JSON.
+        </p>
+        <button type="button" onclick="exportDataJSON()" class="w-full py-2.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs sm:text-sm font-bold shadow transition flex items-center justify-center gap-2">
+          <span>⬇️ Save Progress (.json) Sekarang</span>
+        </button>
+      </div>
+
+      <!-- Section 2: Load Progress -->
+      <div class="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-3">
+        <h4 class="text-xs sm:text-sm font-extrabold text-navy-900">2. Load Progress (.json)</h4>
+        <p class="text-xs text-slate-600">
+          Pilih file <code class="bg-slate-200 px-1 rounded text-[11px]">Progress_Tracker_YYYY-MM-DD.json</code> untuk melihat pratinjau data sebelum memuatnya.
+        </p>
+
+        <label class="w-full py-2.5 px-4 rounded-xl bg-white hover:bg-slate-100 text-navy-900 border-2 border-dashed border-slate-300 hover:border-navy-700 text-xs sm:text-sm font-bold transition flex items-center justify-center gap-2 cursor-pointer">
+          <span>📂 Pilih File Progress (.json)</span>
+          <input type="file" id="modalImportFileInput" accept=".json,application/json" onchange="handleBackupFilePreview(event)" class="hidden" />
+        </label>
+
+        <!-- Error Message on Invalid File -->
+        <div id="importValidationError" class="hidden p-3 rounded-xl bg-rose-50 border border-rose-200 text-xs text-rose-700 font-semibold"></div>
+
+        <!-- Preview Box before Applying Restore -->
+        <div id="importPreviewBox" class="hidden p-3.5 rounded-xl bg-white border border-sky-300 space-y-3 shadow-sm">
+          <div class="flex items-center justify-between border-b border-slate-100 pb-2">
+            <span class="text-xs font-extrabold text-sky-900">📋 Pratinjau Isi File Progress</span>
+            <span id="previewFileName" class="text-[11px] font-mono text-slate-500 truncate max-w-[180px]">progress.json</span>
+          </div>
+          <div class="grid grid-cols-2 gap-2 text-xs">
+            <div class="p-2.5 rounded-lg bg-slate-50 border border-slate-200">
+              <p class="text-[11px] text-slate-500">Hari Belajar Tercatat</p>
+              <p id="previewStudyDays" class="text-sm font-extrabold text-navy-900">0 hari (0 menit)</p>
+            </div>
+            <div class="p-2.5 rounded-lg bg-slate-50 border border-slate-200">
+              <p class="text-[11px] text-slate-500">Materi Mastered</p>
+              <p id="previewMastered" class="text-sm font-extrabold text-emerald-700">0 / 26 modul</p>
+            </div>
+            <div class="p-2.5 rounded-lg bg-slate-50 border border-slate-200">
+              <p class="text-[11px] text-slate-500">Catatan Error Log</p>
+              <p id="previewErrorLogs" class="text-sm font-extrabold text-rose-700">0 entri</p>
+            </div>
+            <div class="p-2.5 rounded-lg bg-slate-50 border border-slate-200">
+              <p class="text-[11px] text-slate-500">Total Flashcard</p>
+              <p id="previewFlashcards" class="text-sm font-extrabold text-sky-700">0 kartu (0 hafal)</p>
+            </div>
+          </div>
+          <button type="button" onclick="confirmRestoreBackup()" class="w-full py-2.5 px-4 rounded-xl bg-navy-900 hover:bg-navy-800 text-white text-xs sm:text-sm font-bold shadow transition flex items-center justify-center gap-2">
+            <span>✅ Muat & Timpa Progress Sekarang</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST NOTIFICATION -->
+  <div id="toastNotification" class="fixed bottom-5 right-5 z-50 transform translate-y-20 opacity-0 transition-all duration-300 pointer-events-none">
+    <div class="bg-navy-900 text-white px-4 py-3 rounded-xl shadow-xl border border-emerald-500/40 flex items-center gap-2.5 text-xs sm:text-sm font-semibold">
+      <span id="toastIcon">✅</span>
+      <span id="toastMessage">Berhasil disimpan!</span>
+    </div>
+  </div>
+
+  <!-- JAVASCRIPT APPLICATION LOGIC -->
+  <script>
+    // =========================================================================
+    // 1. CONSTANTS & INITIAL CURRICULUM DATA (AL FAIZ 2026: TWK - TIU - TKP)
+    // =========================================================================
+    const STORAGE_KEY = 'CASN_DKI_2027_STUDY_TRACKER_V3';
+
+    const SYLLABUS_BY_PHASE = {
+      TWK: [
+        '1. Implementasi Pancasila',
+        '2. Implementasi UUD 1945',
+        '3. Nasionalisme',
+        '4. Pilar NKRI',
+        '5. Integritas',
+        '6. Bela Negara',
+        '7. Gagasan Utama',
+        '8. Kalimat Efektif'
+      ],
+      TIU: [
+        '1. Pecahan dan Desimal',
+        '2. Hubungan X dan Y',
+        '3. Analogi Kata dan Kalimat',
+        '4. Pola Kalimat',
+        '5. Silogisme',
+        '6. Pola Bilangan',
+        '7. Perbandingan Senilai dan Tak Senilai',
+        '8. Figural 9 Kotak',
+        '9. Figural',
+        '10. Penalaran Analitis',
+        '11. Tabel'
+      ],
+      TKP: [
+        '1. Pelayanan Publik',
+        '2. Profesionalisme',
+        '3. Jejaring Kerja',
+        '4. Teknologi Informasi dan Komunikasi',
+        '5. Sosial Budaya',
+        '6. Anti Radikalisme'
+      ]
+    };
+
+    const FLASHCARD_PHASE_GROUPS = [
+      {
+        label: 'FASE 1: TWK (8 Tema)',
+        options: [
+          'TWK - Implementasi Pancasila',
+          'TWK - Implementasi UUD 1945',
+          'TWK - Nasionalisme',
+          'TWK - Pilar NKRI',
+          'TWK - Integritas',
+          'TWK - Bela Negara',
+          'TWK - Gagasan Utama',
+          'TWK - Kalimat Efektif'
+        ]
+      },
+      {
+        label: 'FASE 2: TIU (11 Tema)',
+        options: [
+          'TIU - Pecahan dan Desimal',
+          'TIU - Hubungan X dan Y',
+          'TIU - Analogi Kata dan Kalimat',
+          'TIU - Pola Kalimat',
+          'TIU - Silogisme',
+          'TIU - Pola Bilangan',
+          'TIU - Perbandingan Senilai dan Tak Senilai',
+          'TIU - Figural 9 Kotak',
+          'TIU - Figural',
+          'TIU - Penalaran Analitis',
+          'TIU - Tabel'
+        ]
+      },
+      {
+        label: 'FASE 3: TKP (6 Tema)',
+        options: [
+          'TKP - Pelayanan Publik',
+          'TKP - Profesionalisme',
+          'TKP - Jejaring Kerja',
+          'TKP - Teknologi Informasi dan Komunikasi',
+          'TKP - Sosial Budaya',
+          'TKP - Anti Radikalisme'
+        ]
+      }
+    ];
+
+    const INITIAL_MODULES = [
+      // FASE 1: TWK (Hal. 1 - 171)
+      { id: 'twk-1', phase: 'FASE1_TWK', category: 'TWK', materialLabel: '1. Implementasi Pancasila', dateRange: 'Fase 1 • Tema 1', title: 'Tema 1: Implementasi Pancasila', bookRef: 'Al Faiz Hal. 2–27 (Teori, Soal & Pembahasan)', durationDays: 2, steps: [false, false, false, false, false, false], notes: 'Pengamalan sila 1–5 dalam kasus nyata & kedudukan Pancasila.' },
+      { id: 'twk-2', phase: 'FASE1_TWK', category: 'TWK', materialLabel: '2. Implementasi UUD 1945', dateRange: 'Fase 1 • Tema 2', title: 'Tema 2: Implementasi UUD 1945', bookRef: 'Al Faiz Hal. 28–49 (Teori, Soal & Pembahasan)', durationDays: 2, steps: [false, false, false, false, false, false], notes: 'Pasal krusial amandemen, lembaga negara, dan hak warga negara.' },
+      { id: 'twk-3', phase: 'FASE1_TWK', category: 'TWK', materialLabel: '3. Nasionalisme', dateRange: 'Fase 1 • Tema 3', title: 'Tema 3: Nasionalisme', bookRef: 'Al Faiz Hal. 50–65 (Teori, Soal & Pembahasan)', durationDays: 2, steps: [false, false, false, false, false, false], notes: 'Semangat kebangsaan, tokoh pergerakan, dan studi kasus wawasan kebangsaan.' },
+      { id: 'twk-4', phase: 'FASE1_TWK', category: 'TWK', materialLabel: '4. Pilar NKRI', dateRange: 'Fase 1 • Tema 4', title: 'Tema 4: Pilar NKRI', bookRef: 'Al Faiz Hal. 66–89 (Teori, Soal & Pembahasan)', durationDays: 2, steps: [false, false, false, false, false, false], notes: 'Bhinneka Tunggal Ika, wawasan nusantara, dan keutuhan NKRI.' },
+      { id: 'twk-5', phase: 'FASE1_TWK', category: 'TWK', materialLabel: '5. Integritas', dateRange: 'Fase 1 • Tema 5', title: 'Tema 5: Integritas', bookRef: 'Al Faiz Hal. 90–111 (Teori, Soal & Pembahasan)', durationDays: 2, steps: [false, false, false, false, false, false], notes: '9 nilai antikorupsi KPK, kejujuran, dan etika penyelenggara negara.' },
+      { id: 'twk-6', phase: 'FASE1_TWK', category: 'TWK', materialLabel: '6. Bela Negara', dateRange: 'Fase 1 • Tema 6', title: 'Tema 6: Bela Negara', bookRef: 'Al Faiz Hal. 112–130 (Teori, Soal & Pembahasan)', durationDays: 2, steps: [false, false, false, false, false, false], notes: 'Nilai dasar bela negara & ancaman non-militer di era digital.' },
+      { id: 'twk-7', phase: 'FASE1_TWK', category: 'TWK', materialLabel: '7. Gagasan Utama', dateRange: 'Fase 1 • Tema 7', title: 'Tema 7: Gagasan Utama', bookRef: 'Al Faiz Hal. 131–152 (Teori, Soal & Pembahasan)', durationDays: 2, steps: [false, false, false, false, false, false], notes: 'Ide pokok paragraf deduktif, induktif, campuran, dan simpulan bacaan.' },
+      { id: 'twk-8', phase: 'FASE1_TWK', category: 'TWK', materialLabel: '8. Kalimat Efektif', dateRange: 'Fase 1 • Tema 8', title: 'Tema 8: Kalimat Efektif', bookRef: 'Al Faiz Hal. 153–171 (Teori, Soal & Pembahasan)', durationDays: 2, steps: [false, false, false, false, false, false], notes: 'PUEBI/EYD V, kehematan kata, kesejajaran bentuk, dan tanda baca.' },
+
+      // FASE 2: TIU (Hal. 175 - 393)
+      { id: 'tiu-1', phase: 'FASE2_TIU', category: 'TIU', materialLabel: '1. Pecahan dan Desimal', dateRange: 'Fase 2 • Tema 1', title: 'Tema 1: Pecahan dan Desimal', bookRef: 'Al Faiz Hal. 176–186 (Teori, Soal & Pembahasan)', durationDays: 2, steps: [false, false, false, false, false, false], notes: 'Pecahan istimewa (1/8 = 12,5%, 1/6 = 16,67%, 3/8 = 37,5%) & hitung cepat.' },
+      { id: 'tiu-2', phase: 'FASE2_TIU', category: 'TIU', materialLabel: '2. Hubungan X dan Y', dateRange: 'Fase 2 • Tema 2', title: 'Tema 2: Hubungan X dan Y', bookRef: 'Al Faiz Hal. 187–202 (Teori, Soal & Pembahasan)', durationDays: 2, steps: [false, false, false, false, false, false], notes: 'Perbandingan kuantitatif X vs Y, aljabar cepat, dan uji nilai negatif/pecahan.' },
+      { id: 'tiu-3', phase: 'FASE2_TIU', category: 'TIU', materialLabel: '3. Analogi Kata dan Kalimat', dateRange: 'Fase 2 • Tema 3', title: 'Tema 3: Analogi Kata dan Kalimat', bookRef: 'Al Faiz Hal. 203–235 (Teori, Soal & Pembahasan)', durationDays: 2, steps: [false, false, false, false, false, false], notes: 'Padanan hubungan kata dan kesetaraan struktur kalimat SPOK.' },
+      { id: 'tiu-4', phase: 'FASE2_TIU', category: 'TIU', materialLabel: '4. Pola Kalimat', dateRange: 'Fase 2 • Tema 4', title: 'Tema 4: Pola Kalimat', bookRef: 'Al Faiz Hal. 236–248 (Teori, Soal & Pembahasan)', durationDays: 2, steps: [false, false, false, false, false, false], notes: 'Identifikasi S-P-O-K-Pel dan perluasan klausa.' },
+      { id: 'tiu-5', phase: 'FASE2_TIU', category: 'TIU', materialLabel: '5. Silogisme', dateRange: 'Fase 2 • Tema 5', title: 'Tema 5: Silogisme', bookRef: 'Al Faiz Hal. 249–274 (Teori, Soal & Pembahasan)', durationDays: 2, steps: [false, false, false, false, false, false], notes: 'Modus Ponens, Tollens, Silogisme Berantai, Kuantor Semua/Sebagian & Jebakan TDDS.' },
+      { id: 'tiu-6', phase: 'FASE2_TIU', category: 'TIU', materialLabel: '6. Pola Bilangan', dateRange: 'Fase 2 • Tema 6', title: 'Tema 6: Pola Bilangan', bookRef: 'Al Faiz Hal. 275–289 (Teori, Soal & Pembahasan)', durationDays: 2, steps: [false, false, false, false, false, false], notes: 'Deret 1 larik, 2 larik, lompat, Fibonacci, dan deret bertingkat.' },
+      { id: 'tiu-7', phase: 'FASE2_TIU', category: 'TIU', materialLabel: '7. Perbandingan Senilai dan Tak Senilai', dateRange: 'Fase 2 • Tema 7', title: 'Tema 7: Perbandingan Senilai & Tak Senilai', bookRef: 'Al Faiz Hal. 290–313 (Teori, Soal & Pembahasan)', durationDays: 2, steps: [false, false, false, false, false, false], notes: 'Proyek terhenti, pekerja tambahan, dan rumus gabungan S-O-W.' },
+      { id: 'tiu-8', phase: 'FASE2_TIU', category: 'TIU', materialLabel: '8. Figural 9 Kotak', dateRange: 'Fase 2 • Tema 8', title: 'Tema 8: Figural 9 Kotak', bookRef: 'Al Faiz Hal. 314–337 (Teori, Soal & Pembahasan)', durationDays: 2, steps: [false, false, false, false, false, false], notes: 'Pola baris/kolom matriks 3x3, penggabungan gambar, dan eliminasi elemen.' },
+      { id: 'tiu-9', phase: 'FASE2_TIU', category: 'TIU', materialLabel: '9. Figural', dateRange: 'Fase 2 • Tema 9', title: 'Tema 9: Figural (Analogi, Ketidaksamaan & Serial)', bookRef: 'Al Faiz Hal. 338–358 (Teori, Soal & Pembahasan)', durationDays: 2, steps: [false, false, false, false, false, false], notes: 'Rotasi 45°/90°, pencerminan, dan perubahan jumlah sisi/arsiran.' },
+      { id: 'tiu-10', phase: 'FASE2_TIU', category: 'TIU', materialLabel: '10. Penalaran Analitis', dateRange: 'Fase 2 • Tema 10', title: 'Tema 10: Penalaran Analitis', bookRef: 'Al Faiz Hal. 359–383 (Teori, Soal & Pembahasan)', durationDays: 2, steps: [false, false, false, false, false, false], notes: 'Urutan peringkat, posisi duduk melingkar/sejajar, dan jadwal bersyarat.' },
+      { id: 'tiu-11', phase: 'FASE2_TIU', category: 'TIU', materialLabel: '11. Tabel', dateRange: 'Fase 2 • Tema 11', title: 'Tema 11: Tabel (Interpretasi Data)', bookRef: 'Al Faiz Hal. 384–393 (Teori, Soal & Pembahasan)', durationDays: 2, steps: [false, false, false, false, false, false], notes: 'Perbandingan persentase cepat, rata-rata, dan ketelitian membaca baris/kolom.' },
+
+      // FASE 3: TKP (Hal. 401 - 496) & TRY OUT AKHIR
+      { id: 'tkp-1', phase: 'FASE3_TKP', category: 'TKP', materialLabel: '1. Pelayanan Publik', dateRange: 'Fase 3 • Tema 1', title: 'Tema 1: Pelayanan Publik', bookRef: 'Al Faiz Hal. 402–420 (Teori, Soal & Pembahasan)', durationDays: 2, steps: [false, false, false, false, false, false], notes: 'Pilih opsi yang paling solutif, ramah, cepat, dan sesuai SOP bagi masyarakat.' },
+      { id: 'tkp-2', phase: 'FASE3_TKP', category: 'TKP', materialLabel: '2. Profesionalisme', dateRange: 'Fase 3 • Tema 2', title: 'Tema 2: Profesionalisme', bookRef: 'Al Faiz Hal. 421–438 (Teori, Soal & Pembahasan)', durationDays: 2, steps: [false, false, false, false, false, false], notes: 'Tanggung jawab penuh pada tugas utama di tengah gangguan atau konflik.' },
+      { id: 'tkp-3', phase: 'FASE3_TKP', category: 'TKP', materialLabel: '3. Jejaring Kerja', dateRange: 'Fase 3 • Tema 3', title: 'Tema 3: Jejaring Kerja', bookRef: 'Al Faiz Hal. 439–454 (Teori, Soal & Pembahasan)', durationDays: 2, steps: [false, false, false, false, false, false], notes: 'Kolaborasi lintas unit, membuka relasi positif, dan berbagi informasi kerja.' },
+      { id: 'tkp-4', phase: 'FASE3_TKP', category: 'TKP', materialLabel: '4. Teknologi Informasi dan Komunikasi', dateRange: 'Fase 3 • Tema 4', title: 'Tema 4: Teknologi Informasi & Komunikasi', bookRef: 'Al Faiz Hal. 455–470 (Teori, Soal & Pembahasan)', durationDays: 2, steps: [false, false, false, false, false, false], notes: 'Adaptif terhadap sistem digital baru dan menjaga keamanan data instansi.' },
+      { id: 'tkp-5', phase: 'FASE3_TKP', category: 'TKP', materialLabel: '5. Sosial Budaya', dateRange: 'Fase 3 • Tema 5', title: 'Tema 5: Sosial Budaya', bookRef: 'Al Faiz Hal. 471–488 (Teori, Soal & Pembahasan)', durationDays: 2, steps: [false, false, false, false, false, false], notes: 'Menghargai keragaman adat, empati sosial, dan berbaur dengan masyarakat.' },
+      { id: 'tkp-6', phase: 'FASE3_TKP', category: 'TKP', materialLabel: '6. Anti Radikalisme', dateRange: 'Fase 3 • Tema 6', title: 'Tema 6: Anti Radikalisme', bookRef: 'Al Faiz Hal. 489–496 (Teori, Soal & Pembahasan)', durationDays: 2, steps: [false, false, false, false, false, false], notes: 'Deteksi dini paham intoleran, tabayyun/klarifikasi, dan lapor pimpinan.' },
+      { id: 'to-akhir', phase: 'FASE3_TKP', category: 'TO', materialLabel: '1. Pelayanan Publik', dateRange: 'Konsolidasi Akhir', title: 'Simulasi Try Out CAT Full 110 Soal & Evaluasi Total', bookRef: 'Try Out Website / Al Faiz (100 Menit)', durationDays: 2, steps: [false, false, false, false, false, false], notes: 'Uji manajemen waktu 100 menit & pastikan skor menembus ≥ 400.' }
+    ];
+
+    const INITIAL_ERROR_LOGS = [];
+
+    const INITIAL_FLASHCARDS = [];
+
+    // =========================================================================
+    // 2. STATE MANAGEMENT & LOCAL STORAGE
+    // =========================================================================
+    let appState = {
+      customTitle: 'JUDUL TULIS DISINI',
+      modules: JSON.parse(JSON.stringify(INITIAL_MODULES)),
+      dailyLogs: {}, // { 'YYYY-MM-DD': { minutes: number, completed: boolean } }
+      errorLogs: [],
+      flashcards: [],
+      trackerFilterPhase: 'ALL',
+      trackerFilterStatus: 'ALL',
+      timerModeMinutes: 30
+    };
+
+    // Calendar UI State
+    let calViewYear = null;
+    let calViewMonth = null;
+
+    // Real-time Timer State (Monotonic High-Res Clock)
+    let timerInterval = null;
+    let timerRunning = false;
+    let timerTotalSeconds = 30 * 60;
+    let timerRemainingSeconds = 30 * 60;
+    let timerEndPerfMs = null;
+    let timerStartPerfMs = null;
+    let timerAccumulatedMsBeforeRun = 0;
+    let timerLoggedWholeMinutes = 0;
+
+    // Flashcard UI State
+    let filteredFlashcards = [];
+    let currentFcIndex = 0;
+    let isFcFlipped = false;
+
+    // Pending Backup Restore Payload
+    let pendingRestorePayload = null;
+
+    const STEP_LABELS = [
+      '1. Teori',
+      '2. Tes 1',
+      '3. Eval 1',
+      '4. Tes 2',
+      '5. Eval 2',
+      '6. Mastered'
+    ];
+
+    function getTodayISO() {
+      const now = new Date();
+      const tzOffset = now.getTimezoneOffset() * 60000;
+      return new Date(now - tzOffset).toISOString().split('T')[0];
+    }
+
+    function loadState() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          appState = {
+            ...appState,
+            ...parsed,
+            modules: Array.isArray(parsed.modules) && parsed.modules.length > 0 ? parsed.modules : appState.modules,
+            dailyLogs: parsed.dailyLogs || {},
+            errorLogs: Array.isArray(parsed.errorLogs) ? parsed.errorLogs : [],
+            flashcards: Array.isArray(parsed.flashcards) ? parsed.flashcards : [],
+            timerModeMinutes: [30, 60, 90, 120].includes(Number(parsed.timerModeMinutes)) ? Number(parsed.timerModeMinutes) : 30
+          };
+        }
+      } catch (e) {
+        console.warn('Gagal memuat localStorage, menggunakan data default.', e);
+      }
+
+      // Sync editable title UI
+      const titleEl = document.getElementById('editableMainTitle');
+      if (titleEl) {
+        titleEl.textContent = appState.customTitle || 'JUDUL TULIS DISINI';
+      }
+      updateDocumentTitleWithTimer();
+
+      // Sync timer mode dropdown & initial seconds
+      const modeSelect = document.getElementById('timerModeSelect');
+      if (modeSelect) {
+        modeSelect.value = String(appState.timerModeMinutes);
+      }
+      timerTotalSeconds = appState.timerModeMinutes * 60;
+      timerRemainingSeconds = timerTotalSeconds;
+      timerAccumulatedMsBeforeRun = 0;
+
+      // Initialize calendar view to current month
+      const now = new Date();
+      calViewYear = now.getFullYear();
+      calViewMonth = now.getMonth();
+    }
+
+    function saveState() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(appState));
+      } catch (e) {
+        showToast('Gagal menyimpan ke penyimpanan browser.', '⚠️');
+      }
+    }
+
+    // =========================================================================
+    // 3. EDITABLE MAIN TITLE LOGIC
+    // =========================================================================
+    function focusEditableTitle() {
+      const el = document.getElementById('editableMainTitle');
+      if (!el) return;
+      el.focus();
+      const range = document.createRange();
+      range.selectNodeContents(el);
+      const sel = window.getSelection();
+      sel.removeAllRanges();
+      sel.addRange(range);
+    }
+
+    function handleTitleKeydown(e) {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        e.target.blur();
+      }
+    }
+
+    function saveCustomTitle() {
+      const el = document.getElementById('editableMainTitle');
+      if (!el) return;
+      const cleaned = el.textContent.trim();
+      appState.customTitle = cleaned || 'JUDUL TULIS DISINI';
+      el.textContent = appState.customTitle;
+      saveState();
+      updateDocumentTitleWithTimer();
+      showToast('Judul berhasil diperbarui!', '✏️');
+    }
+
+    function updateDocumentTitleWithTimer() {
+      const baseTitle = appState.customTitle || 'JUDUL TULIS DISINI';
+      if (timerRunning) {
+        document.title = `[${formatSecondsToMMSS(timerRemainingSeconds)}] ${baseTitle}`;
+      } else {
+        document.title = `${baseTitle} • Study & Mastery Tracker`;
+      }
+    }
+
+    // =========================================================================
+    // 4. DATE, TARGET & STREAK ENGINE
+    // =========================================================================
+    function getTargetMinutesForDate(isoDateStr) {
+      const [y, m, d] = isoDateStr.split('-').map(Number);
+      const dayOfWeek = new Date(y, m - 1, d).getDay(); // 0 = Sunday
+      if (dayOfWeek === 0) return 0; // Minggu Off
+      return Number(appState.timerModeMinutes) || 30;
+    }
+
+    function formatIndonesianDate(isoDateStr) {
+      const [y, m, d] = isoDateStr.split('-').map(Number);
+      const dateObj = new Date(y, m - 1, d);
+      const days = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+      const months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+      return `${days[dateObj.getDay()]}, ${d} ${months[m - 1]} ${y}`;
+    }
+
+    function calculateStreak() {
+      let streak = 0;
+      const todayStr = getTodayISO();
+      let cursor = new Date();
+      cursor.setHours(12, 0, 0, 0);
+
+      for (let i = 0; i < 365; i++) {
+        const tzOffset = cursor.getTimezoneOffset() * 60000;
+        const iso = new Date(cursor - tzOffset).toISOString().split('T')[0];
+        const dayOfWeek = cursor.getDay();
+        const log = appState.dailyLogs[iso];
+        const target = getTargetMinutesForDate(iso);
+
+        if (dayOfWeek === 0) {
+          cursor.setDate(cursor.getDate() - 1);
+          continue;
+        }
+
+        const isDone = log && (log.completed || log.minutes >= target);
+        if (isDone) {
+          streak++;
+        } else {
+          if (iso === todayStr) {
+            cursor.setDate(cursor.getDate() - 1);
+            continue;
+          }
+          break;
+        }
+        cursor.setDate(cursor.getDate() - 1);
+      }
+      return streak;
+    }
+
+    // =========================================================================
+    // 5. DASHBOARD HEADER STATS & INTERACTIVE CALENDAR RENDERING
+    // =========================================================================
+    function updateHeaderDashboard() {
+      const today = getTodayISO();
+      const targetMin = getTargetMinutesForDate(today);
+      const log = appState.dailyLogs[today] || { minutes: 0, completed: false };
+
+      document.getElementById('todayDateLabel').textContent = formatIndonesianDate(today);
+      const calTargetText = document.getElementById('calActiveTargetText');
+      if (calTargetText) {
+        calTargetText.textContent = `${appState.timerModeMinutes} menit`;
+      }
+
+      const dayTypeBadge = document.getElementById('todayDayTypeBadge');
+      const statusBadge = document.getElementById('todayStatusBadge');
+      const btnCheckIn = document.getElementById('btnCheckInToday');
+
+      if (targetMin === 0) {
+        dayTypeBadge.textContent = 'Minggu (Off)';
+        dayTypeBadge.className = 'text-[10px] font-bold px-2 py-0.5 rounded bg-purple-500/30 text-purple-200';
+      } else {
+        dayTypeBadge.textContent = `Target ${targetMin}m`;
+        dayTypeBadge.className = 'text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-500/30 text-emerald-200';
+      }
+
+      const isCompleted = log.completed || (targetMin > 0 && log.minutes >= targetMin);
+      if (targetMin === 0 && !log.completed && log.minutes === 0) {
+        statusBadge.textContent = 'Hari Istirahat (Off)';
+        statusBadge.className = 'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold bg-purple-500/20 text-purple-200 border border-purple-400/30';
+        btnCheckIn.textContent = 'Bonus Belajar ✓';
+      } else if (isCompleted) {
+        statusBadge.textContent = 'Target Tercapai ✓';
+        statusBadge.className = 'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-400/40';
+        btnCheckIn.textContent = 'Selesai ✓';
+      } else if (log.minutes > 0) {
+        statusBadge.textContent = 'Sedang Berjalan...';
+        statusBadge.className = 'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold bg-sky-500/20 text-sky-300 border border-sky-400/30';
+        btnCheckIn.textContent = 'Check-In ✓';
+      } else {
+        statusBadge.textContent = 'Belum Belajar';
+        statusBadge.className = 'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold bg-amber-500/20 text-amber-300 border border-amber-400/30';
+        btnCheckIn.textContent = 'Check-In ✓';
+      }
+
+      document.getElementById('todayMinutesText').textContent = log.minutes;
+      document.getElementById('todayTargetText').textContent = targetMin === 0 ? '/ Libur (Opsional)' : `/ ${targetMin} menit`;
+      const pctToday = targetMin === 0 ? (log.minutes > 0 ? 100 : 0) : Math.min(100, Math.round((log.minutes / targetMin) * 100));
+      document.getElementById('todayProgressBar').style.width = `${pctToday}%`;
+
+      const totalMods = appState.modules.length;
+      const masteredMods = appState.modules.filter(m => m.steps.every(Boolean)).length;
+      const pctMastery = totalMods > 0 ? Math.round((masteredMods / totalMods) * 100) : 0;
+      document.getElementById('masteredCountText').textContent = masteredMods;
+      document.getElementById('totalThemesCountText').textContent = `/ ${totalMods} modul (Fase 1–3)`;
+      document.getElementById('masteryPercentText').textContent = `${pctMastery}%`;
+      document.getElementById('masteryProgressBar').style.width = `${pctMastery}%`;
+
+      document.getElementById('streakCountText').textContent = calculateStreak();
+      document.getElementById('badgeErrorCount').textContent = appState.errorLogs.length;
+      document.getElementById('badgeFlashcardCount').textContent = appState.flashcards.length;
+
+      renderInteractiveCalendar();
+    }
+
+    function changeCalendarMonth(delta) {
+      calViewMonth += delta;
+      if (calViewMonth < 0) {
+        calViewMonth = 11;
+        calViewYear--;
+      } else if (calViewMonth > 11) {
+        calViewMonth = 0;
+        calViewYear++;
+      }
+      renderInteractiveCalendar();
+    }
+
+    function jumpCalendarToToday() {
+      const now = new Date();
+      calViewYear = now.getFullYear();
+      calViewMonth = now.getMonth();
+      renderInteractiveCalendar();
+    }
+
+    function toggleCalendarDate(isoDate) {
+      const target = getTargetMinutesForDate(isoDate);
+      const current = appState.dailyLogs[isoDate] || { minutes: 0, completed: false };
+      const nextCompleted = !current.completed;
+
+      appState.dailyLogs[isoDate] = {
+        minutes: nextCompleted ? Math.max(current.minutes, target > 0 ? target : 30) : 0,
+        completed: nextCompleted
+      };
+      saveState();
+      updateHeaderDashboard();
+      showToast(
+        nextCompleted
+          ? `Kehadiran ${formatIndonesianDate(isoDate)} ditandai selesai!`
+          : `Ceklis tanggal ${formatIndonesianDate(isoDate)} dibatalkan.`,
+        nextCompleted ? '🔥' : '↩️'
+      );
+    }
+
+    function renderInteractiveCalendar() {
+      const grid = document.getElementById('interactiveCalendarGrid');
+      const titleEl = document.getElementById('calMonthYearTitle');
+      const monthCountEl = document.getElementById('calMonthActiveCount');
+      if (!grid || !titleEl) return;
+
+      const monthNames = [
+        'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+        'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
+      ];
+      titleEl.textContent = `${monthNames[calViewMonth]} ${calViewYear}`;
+
+      const firstDayOfMonth = new Date(calViewYear, calViewMonth, 1).getDay(); // 0 = Sun, 1 = Mon ... 6 = Sat
+      const startOffset = (firstDayOfMonth + 6) % 7; // Convert so Monday = 0, Sunday = 6
+      const daysInMonth = new Date(calViewYear, calViewMonth + 1, 0).getDate();
+      const todayISO = getTodayISO();
+
+      let activeDaysInMonth = 0;
+      let cellsHTML = '';
+
+      for (let i = 0; i < startOffset; i++) {
+        cellsHTML += `<div class="h-14 sm:h-16 rounded-xl bg-slate-50/60 border border-transparent"></div>`;
+      }
+
+      for (let day = 1; day <= daysInMonth; day++) {
+        const mm = String(calViewMonth + 1).padStart(2, '0');
+        const dd = String(day).padStart(2, '0');
+        const iso = `${calViewYear}-${mm}-${dd}`;
+        const dayOfWeek = new Date(calViewYear, calViewMonth, day).getDay(); // 0 = Sun, 6 = Sat
+        const isSunday = dayOfWeek === 0;
+        const isToday = iso === todayISO;
+        const target = getTargetMinutesForDate(iso);
+        const log = appState.dailyLogs[iso] || { minutes: 0, completed: false };
+        const isDone = log.completed || (target > 0 && log.minutes >= target);
+        const isPartial = !isDone && log.minutes > 0;
+
+        if (isDone) activeDaysInMonth++;
+
+        let cellClasses = 'bg-white border-slate-200 hover:border-emerald-400 text-slate-700';
+        let statusBadge = `<span class="text-[9px] sm:text-[10px] text-slate-400 leading-none truncate max-w-full">${isSunday ? 'Off' : target + 'm'}</span>`;
+
+        if (isDone) {
+          cellClasses = 'bg-emerald-500 border-emerald-600 text-white shadow-sm hover:bg-emerald-600';
+          statusBadge = `<span class="text-[9px] sm:text-[10px] font-extrabold bg-white/20 px-1 py-0.5 rounded leading-none truncate max-w-full">✓${log.minutes}m</span>`;
+        } else if (isPartial) {
+          cellClasses = 'bg-sky-50 border-sky-400 text-sky-900 hover:bg-sky-100';
+          statusBadge = `<span class="text-[9px] sm:text-[10px] font-bold text-sky-700 leading-none truncate max-w-full">${log.minutes}m</span>`;
+        } else if (isSunday) {
+          cellClasses = 'bg-rose-50/70 border-rose-200/80 text-rose-700 hover:border-rose-400';
+          statusBadge = `<span class="text-[9px] sm:text-[10px] font-semibold text-rose-500 leading-none truncate max-w-full">Off</span>`;
+        }
+
+        const todayRing = isToday ? 'ring-2 ring-navy-900 ring-offset-1' : '';
+        const todayIndicator = isToday
+          ? `<span class="inline-flex items-center justify-center rounded ${isDone ? 'bg-white text-emerald-700' : 'bg-navy-900 text-white'} px-1 py-0.5 text-[7px] sm:text-[8px] font-extrabold uppercase leading-none shrink-0"><span class="sm:hidden">•</span><span class="hidden sm:inline">Hari Ini</span></span>`
+          : '';
+
+        cellsHTML += `
+          <button
+            type="button"
+            onclick="toggleCalendarDate('${iso}')"
+            title="Klik untuk ceklis/batal belajar pada ${formatIndonesianDate(iso)}"
+            class="h-14 sm:h-16 min-w-0 overflow-hidden rounded-xl border p-1 sm:p-2 flex flex-col justify-between items-stretch text-left transition cursor-pointer select-none ${cellClasses} ${todayRing}"
+          >
+            <div class="w-full flex items-center justify-between gap-0.5 min-w-0">
+              <span class="text-[11px] sm:text-sm font-extrabold leading-none shrink-0">${day}</span>
+              ${todayIndicator}
+            </div>
+            <div class="w-full flex justify-end min-w-0">
+              ${statusBadge}
+            </div>
+          </button>
+        `;
+      }
+
+      grid.innerHTML = cellsHTML;
+      if (monthCountEl) monthCountEl.textContent = activeDaysInMonth;
+    }
+
+    function toggleTodayCheckIn() {
+      toggleCalendarDate(getTodayISO());
+    }
+
+    // =========================================================================
+    // 6. REAL-TIME HIGH-PRECISION STUDY TIMER & INSTANT FLOATING NOTCH
+    // =========================================================================
+    function formatSecondsToMMSS(totalSeconds) {
+      const safeSec = Math.max(0, Math.floor(totalSeconds));
+      const m = Math.floor(safeSec / 60);
+      const s = safeSec % 60;
+      return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+    }
+
+    function getCurrentElapsedMs() {
+      if (timerRunning && timerStartPerfMs !== null) {
+        return timerAccumulatedMsBeforeRun + Math.max(0, performance.now() - timerStartPerfMs);
+      }
+      return timerAccumulatedMsBeforeRun;
+    }
+
+    function updateTimerUI() {
+      const formatted = formatSecondsToMMSS(timerRemainingSeconds);
+      const displayEl = document.getElementById('timerDisplay');
+      if (displayEl) displayEl.textContent = formatted;
+
+      const elapsedMs = getCurrentElapsedMs();
+      const totalMs = Math.max(1000, timerTotalSeconds * 1000);
+      const progressPct = Math.min(100, Math.max(0, (elapsedMs / totalMs) * 100));
+
+      const notchDisplayEl = document.getElementById('notchTimerDisplay');
+      const notchTargetEl = document.getElementById('notchTargetBadge');
+      const notchProgressEl = document.getElementById('notchProgressBar');
+      const notchDotEl = document.getElementById('notchStatusDot');
+      const btnNotchToggle = document.getElementById('btnNotchToggle');
+
+      if (notchDisplayEl) notchDisplayEl.textContent = formatted;
+      if (notchTargetEl) notchTargetEl.textContent = `${appState.timerModeMinutes} Mnt`;
+      if (notchProgressEl) notchProgressEl.style.width = `${progressPct}%`;
+      if (notchDotEl) {
+        notchDotEl.className = timerRunning
+          ? 'w-2 h-2 rounded-full bg-emerald-400 animate-ping shrink-0'
+          : 'w-2 h-2 rounded-full bg-amber-400 shrink-0';
+      }
+      if (btnNotchToggle) {
+        if (timerRunning) {
+          btnNotchToggle.innerHTML = '<span>⏸ Jeda</span>';
+          btnNotchToggle.className = 'px-2.5 py-1 rounded-full bg-amber-500 hover:bg-amber-400 text-navy-950 text-[11px] font-extrabold transition flex items-center gap-1';
+        } else {
+          btnNotchToggle.innerHTML = '<span>▶ Play</span>';
+          btnNotchToggle.className = 'px-2.5 py-1 rounded-full bg-emerald-500 hover:bg-emerald-400 text-navy-950 text-[11px] font-extrabold transition flex items-center gap-1';
+        }
+      }
+
+      const btnCommit = document.getElementById('btnCommitSession');
+      const elapsedSeconds = Math.floor(elapsedMs / 1000);
+      const unloggedSec = elapsedSeconds - (timerLoggedWholeMinutes * 60);
+      if (btnCommit) {
+        if (unloggedSec >= 60) {
+          btnCommit.classList.remove('hidden');
+          btnCommit.textContent = `✓ Catat +${Math.floor(unloggedSec / 60)}m`;
+        } else {
+          btnCommit.classList.add('hidden');
+        }
+      }
+
+      updateDocumentTitleWithTimer();
+      updateFloatingNotchVisibility();
+    }
+
+    function isTimerCardOutOfView() {
+      const timerCard = document.getElementById('studyTimerCard');
+      if (!timerCard) return false;
+      const rect = timerCard.getBoundingClientRect();
+      return rect.bottom <= 52;
+    }
+
+    function updateFloatingNotchVisibility() {
+      const notchEl = document.getElementById('floatingTimerNotch');
+      if (!notchEl) return;
+
+      const outOfView = isTimerCardOutOfView();
+      if (outOfView) {
+        notchEl.classList.remove('hidden');
+      } else {
+        notchEl.classList.add('hidden');
+      }
+    }
+
+    function scrollToTimerBlock() {
+      const timerCard = document.getElementById('studyTimerCard');
+      if (timerCard) {
+        timerCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      } else {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    }
+
+    function syncRealTimeTimerTick() {
+      if (!timerRunning || timerEndPerfMs === null) return;
+
+      const nowPerf = performance.now();
+      const remainingMs = Math.max(0, timerEndPerfMs - nowPerf);
+      const nextRemainingSec = Math.ceil(remainingMs / 1000);
+      const elapsedSec = Math.floor(getCurrentElapsedMs() / 1000);
+
+      if (nextRemainingSec !== timerRemainingSeconds) {
+        timerRemainingSeconds = nextRemainingSec;
+        const wholeMinutes = Math.floor(elapsedSec / 60);
+        if (wholeMinutes > timerLoggedWholeMinutes) {
+          const deltaMin = wholeMinutes - timerLoggedWholeMinutes;
+          timerLoggedWholeMinutes = wholeMinutes;
+          addMinutesToToday(deltaMin, true);
+        }
+      }
+
+      updateTimerUI();
+
+      if (remainingMs <= 0) {
+        timerRemainingSeconds = 0;
+        const totalSessionMin = Math.round(timerTotalSeconds / 60);
+        const remainingUnlogged = totalSessionMin - timerLoggedWholeMinutes;
+        if (remainingUnlogged > 0) {
+          addMinutesToToday(remainingUnlogged, true);
+          timerLoggedWholeMinutes = totalSessionMin;
+        }
+        stopTimerInternal(true);
+        showToast(`Alhamdulillah! Target ${totalSessionMin} menit selesai & tercatat otomatis!`, '🎉');
+      }
+    }
+
+    function toggleTimer() {
+      const btn = document.getElementById('btnTimerToggle');
+      const liveBadge = document.getElementById('timerLiveBadge');
+      const card = document.getElementById('studyTimerCard');
+
+      if (timerRunning) {
+        stopTimerInternal(false);
+        return;
+      }
+
+      if (timerRemainingSeconds <= 0) {
+        timerTotalSeconds = appState.timerModeMinutes * 60;
+        timerRemainingSeconds = timerTotalSeconds;
+        timerAccumulatedMsBeforeRun = 0;
+        timerLoggedWholeMinutes = 0;
+      }
+
+      timerRunning = true;
+      timerStartPerfMs = performance.now();
+      const remainingMsToRun = (timerTotalSeconds * 1000) - timerAccumulatedMsBeforeRun;
+      timerEndPerfMs = timerStartPerfMs + Math.max(0, remainingMsToRun);
+
+      btn.innerHTML = `<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zM7 8a1 1 0 012 0v4a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v4a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"/></svg><span>Jeda</span>`;
+      btn.className = 'px-4 py-2.5 rounded-xl font-bold text-sm bg-amber-500 hover:bg-amber-400 text-navy-950 shadow-md transition flex items-center gap-1.5';
+      if (liveBadge) liveBadge.classList.remove('hidden');
+      if (card) card.classList.add('border-emerald-500/60');
+
+      updateTimerUI();
+      clearInterval(timerInterval);
+      timerInterval = setInterval(syncRealTimeTimerTick, 100);
+    }
+
+    function stopTimerInternal(isCompleted) {
+      if (timerRunning && timerStartPerfMs !== null) {
+        timerAccumulatedMsBeforeRun += Math.max(0, performance.now() - timerStartPerfMs);
+      }
+      timerRunning = false;
+      timerStartPerfMs = null;
+      timerEndPerfMs = null;
+      clearInterval(timerInterval);
+
+      const btn = document.getElementById('btnTimerToggle');
+      const liveBadge = document.getElementById('timerLiveBadge');
+      const card = document.getElementById('studyTimerCard');
+
+      if (btn) {
+        btn.innerHTML = `<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z"/></svg><span>${isCompleted ? 'Mulai' : 'Lanjut'}</span>`;
+        btn.className = 'px-4 py-2.5 rounded-xl font-bold text-sm bg-emerald-600 hover:bg-emerald-500 text-white shadow-md shadow-emerald-950/50 transition flex items-center gap-1.5';
+      }
+      if (liveBadge) liveBadge.classList.add('hidden');
+      if (card) card.classList.remove('border-emerald-500/60');
+
+      updateTimerUI();
+    }
+
+    function changeTimerMode() {
+      stopTimerInternal(true);
+      const selectedMinutes = Number(document.getElementById('timerModeSelect').value) || 30;
+      appState.timerModeMinutes = selectedMinutes;
+      saveState();
+
+      timerTotalSeconds = selectedMinutes * 60;
+      timerRemainingSeconds = timerTotalSeconds;
+      timerAccumulatedMsBeforeRun = 0;
+      timerLoggedWholeMinutes = 0;
+
+      const btn = document.getElementById('btnTimerToggle');
+      if (btn) {
+        btn.innerHTML = `<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z"/></svg><span>Mulai</span>`;
+      }
+
+      updateTimerUI();
+      updateHeaderDashboard();
+      showToast(`Target durasi diubah ke ${selectedMinutes} menit.`, '⏱️');
+    }
+
+    function resetTimer() {
+      stopTimerInternal(true);
+      const selectedMinutes = Number(document.getElementById('timerModeSelect').value) || 30;
+      timerTotalSeconds = selectedMinutes * 60;
+      timerRemainingSeconds = timerTotalSeconds;
+      timerAccumulatedMsBeforeRun = 0;
+      timerLoggedWholeMinutes = 0;
+
+      const btn = document.getElementById('btnTimerToggle');
+      if (btn) {
+        btn.innerHTML = `<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z"/></svg><span>Mulai</span>`;
+      }
+
+      updateTimerUI();
+    }
+
+    function commitCurrentTimerSession() {
+      const elapsedSeconds = Math.floor(getCurrentElapsedMs() / 1000);
+      const unloggedMinutes = Math.floor(elapsedSeconds / 60) - timerLoggedWholeMinutes;
+      if (unloggedMinutes > 0) {
+        timerLoggedWholeMinutes += unloggedMinutes;
+        addMinutesToToday(unloggedMinutes, false);
+        updateTimerUI();
+      }
+    }
+
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden && timerRunning) {
+        syncRealTimeTimerTick();
+      }
+    });
+
+    window.addEventListener('scroll', updateFloatingNotchVisibility, { passive: true });
+    window.addEventListener('resize', updateFloatingNotchVisibility, { passive: true });
+
+    function addMinutesToToday(mins, silent = false) {
+      const today = getTodayISO();
+      const target = getTargetMinutesForDate(today);
+      const current = appState.dailyLogs[today] || { minutes: 0, completed: false };
+      const updatedMins = current.minutes + mins;
+      appState.dailyLogs[today] = {
+        minutes: updatedMins,
+        completed: current.completed || (target > 0 && updatedMins >= target)
+      };
+      saveState();
+      updateHeaderDashboard();
+      if (!silent) showToast(`+${mins} menit ditambahkan ke log hari ini!`, '⏱️');
+    }
+
+    function openManualLogModal() {
+      document.getElementById('manualLogDate').value = getTodayISO();
+      openModal('manualLogModal');
+    }
+
+    function saveManualMinutes() {
+      const dateVal = document.getElementById('manualLogDate').value || getTodayISO();
+      const minsVal = parseInt(document.getElementById('manualLogMinutes').value, 10) || 0;
+      if (minsVal <= 0) return;
+      const target = getTargetMinutesForDate(dateVal);
+      const current = appState.dailyLogs[dateVal] || { minutes: 0, completed: false };
+      const updatedMins = current.minutes + minsVal;
+      appState.dailyLogs[dateVal] = {
+        minutes: updatedMins,
+        completed: current.completed || (target > 0 && updatedMins >= target)
+      };
+      saveState();
+      updateHeaderDashboard();
+      closeModal('manualLogModal');
+      showToast(`Berhasil menambahkan ${minsVal} menit pada ${formatIndonesianDate(dateVal)}!`, '✅');
+    }
+
+    // =========================================================================
+    // 7. DEPENDENT DROPDOWN HELPERS (FASE -> MATERI & FLASHCARD OPTGROUP)
+    // =========================================================================
+    function updateDependentMaterialDropdown(phaseSelectId, materialSelectId, selectedMaterial = null) {
+      const phaseEl = document.getElementById(phaseSelectId);
+      const matEl = document.getElementById(materialSelectId);
+      if (!phaseEl || !matEl) return;
+
+      const phaseKey = phaseEl.value || 'TIU';
+      const materials = SYLLABUS_BY_PHASE[phaseKey] || [];
+
+      matEl.innerHTML = materials.map(item =>
+        `<option value="${item}" ${item === selectedMaterial ? 'selected' : ''}>${item}</option>`
+      ).join('');
+    }
+
+    function populateFlashcardPhaseDropdowns() {
+      const filterEl = document.getElementById('fcTopicFilter');
+      const modalEl = document.getElementById('newFcTopic');
+      const currentFilterVal = filterEl ? filterEl.value : 'ALL';
+
+      if (filterEl) {
+        const totalCards = appState.flashcards.length;
+        let filterHtml = `<option value="ALL">Semua Fase (${totalCards} Kartu)</option>`;
+        FLASHCARD_PHASE_GROUPS.forEach(group => {
+          filterHtml += `<optgroup label="${group.label}">`;
+          group.options.forEach(opt => {
+            const count = appState.flashcards.filter(fc => fc.topic === opt).length;
+            filterHtml += `<option value="${opt}" ${opt === currentFilterVal ? 'selected' : ''}>${opt}${count > 0 ? ` (${count})` : ''}</option>`;
+          });
+          filterHtml += `</optgroup>`;
+        });
+        filterEl.innerHTML = filterHtml;
+      }
+
+      if (modalEl) {
+        let modalHtml = '';
+        FLASHCARD_PHASE_GROUPS.forEach(group => {
+          modalHtml += `<optgroup label="${group.label}">`;
+          group.options.forEach(opt => {
+            modalHtml += `<option value="${opt}" ${opt === 'TIU - Silogisme' ? 'selected' : ''}>${opt}</option>`;
+          });
+          modalHtml += `</optgroup>`;
+        });
+        modalEl.innerHTML = modalHtml;
+      }
+    }
+
+    // =========================================================================
+    // 8. TAB 1: JADWAL & MASTERY TRACKER RENDERING
+    // =========================================================================
+    function setTrackerFilter(type, value) {
+      if (type === 'phase') {
+        appState.trackerFilterPhase = value;
+        document.querySelectorAll('.filter-phase-btn').forEach(btn => {
+          btn.className = 'filter-phase-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200 transition';
+        });
+        const activeBtn = document.getElementById(`filter-phase-${value}`);
+        if (activeBtn) {
+          activeBtn.className = 'filter-phase-btn px-3 py-1.5 rounded-lg text-xs font-bold bg-navy-900 text-white transition';
+        }
+      } else if (type === 'status') {
+        appState.trackerFilterStatus = value;
+      }
+      renderModules();
+    }
+
+    function getModuleStatus(mod) {
+      const doneCount = mod.steps.filter(Boolean).length;
+      if (doneCount === 6) return 'MASTERED';
+      if (doneCount > 0) return 'IN_PROGRESS';
+      return 'NOT_STARTED';
+    }
+
+    function toggleModuleStep(modId, stepIndex) {
+      const mod = appState.modules.find(m => m.id === modId);
+      if (!mod) return;
+      mod.steps[stepIndex] = !mod.steps[stepIndex];
+      if (stepIndex === 5 && mod.steps[5]) {
+        mod.steps = [true, true, true, true, true, true];
+        showToast(`Selamat! "${mod.title}" berstatus MASTERED!`, '🏆');
+      }
+      saveState();
+      renderModules();
+      updateHeaderDashboard();
+    }
+
+    function setModuleDuration(modId, daysValue) {
+      const mod = appState.modules.find(m => m.id === modId);
+      if (!mod) return;
+      const parsedDays = Math.min(30, Math.max(1, parseInt(daysValue, 10) || 1));
+      mod.durationDays = parsedDays;
+      saveState();
+      showToast(`Durasi "${mod.title}" diatur ke ${mod.durationDays} hari.`, '📆');
+    }
+
+    function renderModules() {
+      const container = document.getElementById('modulesContainer');
+      const filtered = appState.modules.filter(mod => {
+        const phaseOk = appState.trackerFilterPhase === 'ALL' || mod.phase === appState.trackerFilterPhase;
+        const statusOk = appState.trackerFilterStatus === 'ALL' || getModuleStatus(mod) === appState.trackerFilterStatus;
+        return phaseOk && statusOk;
+      });
+
+      if (filtered.length === 0) {
+        container.innerHTML = `
+          <div class="bg-white rounded-2xl border border-slate-200 p-8 text-center">
+            <p class="text-sm font-bold text-slate-600">Tidak ada tema yang sesuai filter saat ini.</p>
+          </div>
+        `;
+        return;
+      }
+
+      const phaseBadgeMap = {
+        FASE1_TWK: { label: 'Fase 1 • TWK', cls: 'bg-amber-100 text-amber-800' },
+        FASE2_TIU: { label: 'Fase 2 • TIU', cls: 'bg-sky-100 text-sky-800' },
+        FASE3_TKP: { label: 'Fase 3 • TKP', cls: 'bg-purple-100 text-purple-800' }
+      };
+
+      container.innerHTML = filtered.map(mod => {
+        const status = getModuleStatus(mod);
+        const doneCount = mod.steps.filter(Boolean).length;
+        const pct = Math.round((doneCount / 6) * 100);
+        const pBadge = phaseBadgeMap[mod.phase] || phaseBadgeMap.FASE1_TWK;
+        const safeCat = mod.category === 'TO' ? 'TKP' : mod.category;
+
+        let cardBorder = 'border-slate-200';
+        let statusBadge = `<span class="px-2.5 py-1 rounded-lg text-[11px] font-bold bg-slate-100 text-slate-600">Belum Mulai</span>`;
+        if (status === 'MASTERED') {
+          cardBorder = 'border-emerald-400 ring-1 ring-emerald-400/30';
+          statusBadge = `<span class="px-2.5 py-1 rounded-lg text-[11px] font-bold bg-emerald-100 text-emerald-800">Mastered ✓ (Lanjut Tema Berikutnya)</span>`;
+        } else if (status === 'IN_PROGRESS') {
+          cardBorder = 'border-sky-300';
+          statusBadge = `<span class="px-2.5 py-1 rounded-lg text-[11px] font-bold bg-sky-100 text-sky-800">Sedang Dipelajari (${doneCount}/6)</span>`;
+        }
+
+        const stepsHtml = STEP_LABELS.map((label, idx) => {
+          const checked = mod.steps[idx];
+          return `
+            <button onclick="toggleModuleStep('${mod.id}', ${idx})"
+              class="flex items-center justify-center gap-1.5 px-2.5 py-2 rounded-xl border text-xs font-bold transition select-none
+              ${checked
+                ? 'bg-emerald-600 border-emerald-600 text-white shadow-sm'
+                : 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100'}">
+              <span>${checked ? '✓' : '○'}</span>
+              <span class="truncate">${label}</span>
+            </button>
+          `;
+        }).join('');
+
+        let durationOptionsHtml = '';
+        for (let d = 1; d <= 30; d++) {
+          durationOptionsHtml += `<option value="${d}" ${Number(mod.durationDays) === d ? 'selected' : ''}>${d} Hari</option>`;
+        }
+
+        return `
+          <div class="bg-white rounded-2xl border ${cardBorder} p-4 sm:p-5 shadow-sm transition hover:shadow-md">
+            <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-3 pb-3 border-b border-slate-100">
+              <div class="space-y-1">
+                <div class="flex flex-wrap items-center gap-2">
+                  <span class="px-2.5 py-0.5 rounded-md text-[11px] font-extrabold ${pBadge.cls}">${pBadge.label}</span>
+                  <span class="px-2.5 py-0.5 rounded-md text-[11px] font-bold bg-navy-900 text-white">📆 ${mod.dateRange}</span>
+                  <div class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-[11px] font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 transition">
+                    <span>⏱️ Durasi:</span>
+                    <select
+                      onchange="setModuleDuration('${mod.id}', this.value)"
+                      aria-label="Pilih durasi 1 sampai 30 hari"
+                      class="bg-transparent font-extrabold text-navy-900 focus:outline-none cursor-pointer pr-0.5"
+                    >
+                      ${durationOptionsHtml}
+                    </select>
+                  </div>
+                  ${statusBadge}
+                </div>
+                <h3 class="text-base sm:text-lg font-extrabold text-navy-900 pt-1">${mod.title}</h3>
+              </div>
+
+              <div class="flex flex-wrap items-center gap-2 shrink-0">
+                <button onclick="openErrorModalForTheme('${safeCat}', '${mod.materialLabel.replace(/'/g, "\\'")}')" class="px-3 py-2 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 text-xs font-bold transition">
+                  + Catat Error
+                </button>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 mt-3.5">
+              ${stepsHtml}
+            </div>
+
+            <div class="mt-3 pt-2.5 border-t border-slate-100 flex items-center justify-between gap-4 text-[11px] text-slate-500">
+              <span class="truncate">💡 ${mod.notes}</span>
+              <span class="font-bold text-navy-800 shrink-0">${pct}% Selesai</span>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // =========================================================================
+    // 9. TAB 2: ERROR LOG & WEAKSPOT TRACKER
+    // =========================================================================
+    function renderErrorLogTable() {
+      const tbody = document.getElementById('errorLogTableBody');
+      const query = (document.getElementById('errorSearchInput').value || '').toLowerCase();
+      const catFilter = document.getElementById('errorCatFilter').value;
+      const statusFilter = document.getElementById('errorStatusFilter').value;
+
+      const filtered = appState.errorLogs.filter(item => {
+        const matchQuery = !query ||
+          item.theme.toLowerCase().includes(query) ||
+          item.concept.toLowerCase().includes(query) ||
+          item.solution.toLowerCase().includes(query);
+        const matchCat = catFilter === 'ALL' || item.category === catFilter;
+        const matchStatus = statusFilter === 'ALL' || item.status === statusFilter;
+        return matchQuery && matchCat && matchStatus;
+      });
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" class="p-8 text-center text-slate-500 font-medium">Belum ada catatan weakspot. Klik tombol "+ Catat Weakspot Baru" untuk menambahkan evaluasi belajar Anda.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = filtered.map(item => {
+        const isDone = item.status === 'Sudah Dikuasai';
+        const catColor = item.category === 'TIU'
+          ? 'bg-sky-100 text-sky-800'
+          : (item.category === 'TWK' ? 'bg-amber-100 text-amber-800' : 'bg-purple-100 text-purple-800');
+        return `
+          <tr class="hover:bg-slate-50 transition">
+            <td class="p-3.5 whitespace-nowrap text-xs text-slate-600 font-medium">${item.date}</td>
+            <td class="p-3.5">
+              <span class="inline-block px-2 py-0.5 rounded text-[10px] font-extrabold mb-1 ${catColor}">Fase ${item.category}</span>
+              <div class="font-bold text-navy-900 text-xs">${item.theme}</div>
+            </td>
+            <td class="p-3.5 text-xs text-slate-700 max-w-xs">${item.concept}</td>
+            <td class="p-3.5 whitespace-nowrap">
+              <span class="px-2 py-1 rounded-md text-[11px] font-semibold bg-slate-100 text-slate-700">${item.cause}</span>
+            </td>
+            <td class="p-3.5 text-xs text-slate-700 max-w-xs">${item.solution}</td>
+            <td class="p-3.5 whitespace-nowrap">
+              <button onclick="toggleErrorStatus('${item.id}')" class="px-2.5 py-1 rounded-lg text-[11px] font-bold transition
+                ${isDone ? 'bg-emerald-100 text-emerald-800 hover:bg-emerald-200' : 'bg-amber-100 text-amber-800 hover:bg-amber-200'}">
+                ${isDone ? 'Sudah Dikuasai ✅' : 'Perlu Review ⚠️'}
+              </button>
+            </td>
+            <td class="p-3.5 whitespace-nowrap text-center">
+              <button onclick="deleteErrorLog('${item.id}')" title="Hapus" class="p-1.5 rounded-lg text-rose-600 hover:bg-rose-50 transition">🗑️</button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function openErrorModal() {
+      document.getElementById('errorForm').reset();
+      document.getElementById('errId').value = '';
+      document.getElementById('errDate').value = getTodayISO();
+      document.getElementById('errCategory').value = 'TIU';
+      updateDependentMaterialDropdown('errCategory', 'errTheme');
+      openModal('errorModal');
+    }
+
+    function openErrorModalForTheme(category, materialLabel) {
+      openErrorModal();
+      const safeCat = ['TWK', 'TIU', 'TKP'].includes(category) ? category : 'TIU';
+      document.getElementById('errCategory').value = safeCat;
+      updateDependentMaterialDropdown('errCategory', 'errTheme', materialLabel);
+    }
+
+    function saveErrorLog(e) {
+      e.preventDefault();
+      const newEntry = {
+        id: 'err-' + Date.now(),
+        date: document.getElementById('errDate').value,
+        category: document.getElementById('errCategory').value,
+        theme: document.getElementById('errTheme').value,
+        concept: document.getElementById('errConcept').value.trim(),
+        cause: document.getElementById('errCause').value,
+        solution: document.getElementById('errSolution').value.trim(),
+        status: document.getElementById('errStatus').value
+      };
+      appState.errorLogs.unshift(newEntry);
+      saveState();
+      renderErrorLogTable();
+      updateHeaderDashboard();
+      closeModal('errorModal');
+      showToast('Catatan weakspot berhasil disimpan!', '🎯');
+    }
+
+    function toggleErrorStatus(id) {
+      const entry = appState.errorLogs.find(e => e.id === id);
+      if (!entry) return;
+      entry.status = entry.status === 'Sudah Dikuasai' ? 'Perlu Review' : 'Sudah Dikuasai';
+      saveState();
+      renderErrorLogTable();
+      showToast(`Status diubah menjadi: ${entry.status}`, '🔄');
+    }
+
+    function deleteErrorLog(id) {
+      appState.errorLogs = appState.errorLogs.filter(e => e.id !== id);
+      saveState();
+      renderErrorLogTable();
+      updateHeaderDashboard();
+      showToast('Entri error log dihapus.', '🗑️');
+    }
+
+    // =========================================================================
+    // 10. TAB 3: FLASHCARD DECK
+    // =========================================================================
+    function filterFlashcards() {
+      const topicVal = document.getElementById('fcTopicFilter').value;
+      const masteryVal = document.getElementById('fcMasteryFilter').value;
+
+      filteredFlashcards = appState.flashcards.filter(fc => {
+        const topicOk = topicVal === 'ALL' || fc.topic === topicVal;
+        const masteryOk = masteryVal === 'ALL' ||
+          (masteryVal === 'MEMORIZED' && fc.memorized) ||
+          (masteryVal === 'REVIEW' && !fc.memorized);
+        return topicOk && masteryOk;
+      });
+
+      currentFcIndex = 0;
+      isFcFlipped = false;
+      renderCurrentFlashcard();
+    }
+
+    function renderCurrentFlashcard() {
+      const inner = document.getElementById('flashcardInner');
+      inner.classList.remove('rotate-y-180');
+      isFcFlipped = false;
+
+      if (filteredFlashcards.length === 0) {
+        document.getElementById('fcCounterText').textContent = '0 Kartu';
+        document.getElementById('fcTopicBadge').textContent = 'Belum Ada Kartu';
+        document.getElementById('fcFrontText').textContent = 'Belum ada flashcard. Klik tombol "+ Tambah Kartu" di atas untuk membuat kartu ringkasan materi Anda.';
+        document.getElementById('fcBackText').textContent = 'Tambahkan konsep penting, rumus cepat, atau poin evaluasi ke dalam flashcard.';
+        document.getElementById('fcHintText').textContent = '';
+        return;
+      }
+
+      if (currentFcIndex >= filteredFlashcards.length) currentFcIndex = 0;
+      const card = filteredFlashcards[currentFcIndex];
+
+      const topicBadgeEl = document.getElementById('fcTopicBadge');
+      topicBadgeEl.textContent = card.topic;
+      if (card.topic.startsWith('TWK')) {
+        topicBadgeEl.className = 'px-2.5 py-1 rounded-full bg-amber-100 text-amber-800 font-bold';
+      } else if (card.topic.startsWith('TKP')) {
+        topicBadgeEl.className = 'px-2.5 py-1 rounded-full bg-purple-100 text-purple-800 font-bold';
+      } else {
+        topicBadgeEl.className = 'px-2.5 py-1 rounded-full bg-sky-100 text-sky-800 font-bold';
+      }
+
+      document.getElementById('fcCounterText').textContent = `Kartu ${currentFcIndex + 1} dari ${filteredFlashcards.length}`;
+      document.getElementById('fcFrontText').textContent = card.front;
+      document.getElementById('fcBackText').textContent = card.back;
+      document.getElementById('fcHintText').textContent = card.hint ? `💡 Petunjuk: ${card.hint}` : '';
+
+      const tag = document.getElementById('fcStatusTagFront');
+      if (card.memorized) {
+        tag.textContent = 'Sudah Hafal ✅';
+        tag.className = 'text-[11px] font-bold px-2.5 py-1 rounded-lg bg-emerald-100 text-emerald-800';
+      } else {
+        tag.textContent = 'Perlu Diulang 🔁';
+        tag.className = 'text-[11px] font-bold px-2.5 py-1 rounded-lg bg-amber-100 text-amber-800';
+      }
+    }
+
+    function flipFlashcard() {
+      if (filteredFlashcards.length === 0) return;
+      isFcFlipped = !isFcFlipped;
+      const inner = document.getElementById('flashcardInner');
+      if (isFcFlipped) inner.classList.add('rotate-y-180');
+      else inner.classList.remove('rotate-y-180');
+    }
+
+    function nextFlashcard() {
+      if (filteredFlashcards.length === 0) return;
+      currentFcIndex = (currentFcIndex + 1) % filteredFlashcards.length;
+      renderCurrentFlashcard();
+    }
+
+    function prevFlashcard() {
+      if (filteredFlashcards.length === 0) return;
+      currentFcIndex = (currentFcIndex - 1 + filteredFlashcards.length) % filteredFlashcards.length;
+      renderCurrentFlashcard();
+    }
+
+    function setFlashcardMastery(isMemorized) {
+      if (filteredFlashcards.length === 0) return;
+      const currentCard = filteredFlashcards[currentFcIndex];
+      const masterCard = appState.flashcards.find(c => c.id === currentCard.id);
+      if (masterCard) {
+        masterCard.memorized = isMemorized;
+        saveState();
+        renderCurrentFlashcard();
+        showToast(isMemorized ? 'Kartu ditandai Sudah Hafal!' : 'Kartu ditandai Perlu Diulang.', isMemorized ? '✅' : '🔁');
+      }
+    }
+
+    function openAddFlashcardModal() {
+      populateFlashcardPhaseDropdowns();
+      const currentFilter = document.getElementById('fcTopicFilter').value;
+      if (currentFilter && currentFilter !== 'ALL') {
+        document.getElementById('newFcTopic').value = currentFilter;
+      }
+      openModal('addFlashcardModal');
+    }
+
+    function saveNewFlashcard(e) {
+      e.preventDefault();
+      const newCard = {
+        id: 'fc-' + Date.now(),
+        topic: document.getElementById('newFcTopic').value,
+        front: document.getElementById('newFcFront').value.trim(),
+        back: document.getElementById('newFcBack').value.trim(),
+        hint: document.getElementById('newFcHint').value.trim(),
+        memorized: false
+      };
+      appState.flashcards.unshift(newCard);
+      saveState();
+      populateFlashcardPhaseDropdowns();
+      filterFlashcards();
+      updateHeaderDashboard();
+      closeModal('addFlashcardModal');
+      showToast('Flashcard baru ditambahkan!', '🗂️');
+    }
+
+    // =========================================================================
+    // 11. TAB 4: SAVE / LOAD PROGRESS (.JSON) & RESET
+    // =========================================================================
+    function openBackupRestoreModal() {
+      pendingRestorePayload = null;
+      const errBox = document.getElementById('importValidationError');
+      const prevBox = document.getElementById('importPreviewBox');
+      const fileInput = document.getElementById('modalImportFileInput');
+      if (errBox) errBox.classList.add('hidden');
+      if (prevBox) prevBox.classList.add('hidden');
+      if (fileInput) fileInput.value = '';
+      openModal('backupRestoreModal');
+    }
+
+    function exportDataJSON() {
+      const exportPayload = {
+        appVersion: 'STUDY_TRACKER_STANDALONE_V1',
+        exportedAt: new Date().toISOString(),
+        data: appState
+      };
+      const dataStr = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(exportPayload, null, 2));
+      const dlAnchor = document.createElement('a');
+      dlAnchor.setAttribute('href', dataStr);
+      dlAnchor.setAttribute('download', `Progress_Tracker_${getTodayISO()}.json`);
+      document.body.appendChild(dlAnchor);
+      dlAnchor.click();
+      dlAnchor.remove();
+      showToast('File progress (.json) berhasil diunduh!', '💾');
+    }
+
+    function handleBackupFilePreview(event) {
+      const file = event.target.files[0];
+      const errBox = document.getElementById('importValidationError');
+      const prevBox = document.getElementById('importPreviewBox');
+      errBox.classList.add('hidden');
+      prevBox.classList.add('hidden');
+      pendingRestorePayload = null;
+
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        try {
+          const parsed = JSON.parse(evt.target.result);
+          const candidateData = parsed && parsed.data && Array.isArray(parsed.data.modules)
+            ? parsed.data
+            : (parsed && Array.isArray(parsed.modules) ? parsed : null);
+
+          if (!candidateData || !Array.isArray(candidateData.modules) || candidateData.modules.length === 0) {
+            throw new Error('Struktur file JSON tidak dikenali sebagai file progress tracker yang valid.');
+          }
+
+          pendingRestorePayload = candidateData;
+
+          const logsObj = candidateData.dailyLogs || {};
+          const logKeys = Object.keys(logsObj);
+          const activeDays = logKeys.filter(k => logsObj[k] && (logsObj[k].completed || logsObj[k].minutes > 0)).length;
+          const totalMins = logKeys.reduce((acc, k) => acc + (Number(logsObj[k]?.minutes) || 0), 0);
+          const masteredCount = candidateData.modules.filter(m => Array.isArray(m.steps) && m.steps.every(Boolean)).length;
+          const errCount = Array.isArray(candidateData.errorLogs) ? candidateData.errorLogs.length : 0;
+          const fcList = Array.isArray(candidateData.flashcards) ? candidateData.flashcards : [];
+          const memorizedCount = fcList.filter(c => c.memorized).length;
+
+          document.getElementById('previewFileName').textContent = file.name;
+          document.getElementById('previewStudyDays').textContent = `${activeDays} hari (${totalMins} menit)`;
+          document.getElementById('previewMastered').textContent = `${masteredCount} / ${candidateData.modules.length} modul`;
+          document.getElementById('previewErrorLogs').textContent = `${errCount} entri`;
+          document.getElementById('previewFlashcards').textContent = `${fcList.length} kartu (${memorizedCount} hafal)`;
+
+          prevBox.classList.remove('hidden');
+        } catch (err) {
+          errBox.textContent = `⚠️ Gagal membaca file: ${err.message}`;
+          errBox.classList.remove('hidden');
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    function confirmRestoreBackup() {
+      if (!pendingRestorePayload) return;
+
+      appState = {
+        ...appState,
+        ...pendingRestorePayload,
+        customTitle: pendingRestorePayload.customTitle || 'JUDUL TULIS DISINI',
+        dailyLogs: pendingRestorePayload.dailyLogs || {},
+        errorLogs: Array.isArray(pendingRestorePayload.errorLogs) ? pendingRestorePayload.errorLogs : [],
+        flashcards: Array.isArray(pendingRestorePayload.flashcards) ? pendingRestorePayload.flashcards : [],
+        timerModeMinutes: [30, 60, 90, 120].includes(Number(pendingRestorePayload.timerModeMinutes)) ? Number(pendingRestorePayload.timerModeMinutes) : 30
+      };
+
+      const titleEl = document.getElementById('editableMainTitle');
+      if (titleEl) titleEl.textContent = appState.customTitle;
+      const modeSelect = document.getElementById('timerModeSelect');
+      if (modeSelect) modeSelect.value = String(appState.timerModeMinutes);
+      resetTimer();
+
+      saveState();
+      updateHeaderDashboard();
+      renderModules();
+      renderErrorLogTable();
+      populateFlashcardPhaseDropdowns();
+      filterFlashcards();
+
+      pendingRestorePayload = null;
+      closeModal('backupRestoreModal');
+      showToast('Seluruh progress berhasil dimuat & dipulihkan!', '✅');
+    }
+
+    function openResetConfirmModal() {
+      openModal('resetConfirmModal');
+    }
+
+    function executeFullReset() {
+      localStorage.removeItem(STORAGE_KEY);
+      appState = {
+        customTitle: 'JUDUL TULIS DISINI',
+        modules: JSON.parse(JSON.stringify(INITIAL_MODULES)),
+        dailyLogs: {},
+        errorLogs: [],
+        flashcards: [],
+        trackerFilterPhase: 'ALL',
+        trackerFilterStatus: 'ALL',
+        timerModeMinutes: 30
+      };
+      const titleEl = document.getElementById('editableMainTitle');
+      if (titleEl) titleEl.textContent = appState.customTitle;
+      const modeSelect = document.getElementById('timerModeSelect');
+      if (modeSelect) modeSelect.value = '30';
+      resetTimer();
+
+      saveState();
+      updateHeaderDashboard();
+      renderModules();
+      renderErrorLogTable();
+      populateFlashcardPhaseDropdowns();
+      filterFlashcards();
+      closeModal('resetConfirmModal');
+      showToast('Semua data berhasil dikembalikan ke awal.', '🔄');
+    }
+
+    // =========================================================================
+    // 12. NAVIGATION, MODALS & TOAST UTILITIES
+    // =========================================================================
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-panel').forEach(p => p.classList.add('hidden'));
+      document.getElementById(`tab-${tabId}`).classList.remove('hidden');
+
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.className = 'tab-btn whitespace-nowrap px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold text-slate-600 hover:bg-slate-100 flex items-center gap-2 transition';
+      });
+      const activeBtn = document.getElementById(`tab-btn-${tabId}`);
+      activeBtn.className = 'tab-btn active-tab whitespace-nowrap px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold bg-navy-900 text-white shadow-sm flex items-center gap-2 transition';
+    }
+
+    function openModal(id) {
+      const m = document.getElementById(id);
+      m.classList.remove('hidden');
+      m.classList.add('flex');
+    }
+
+    function closeModal(id) {
+      const m = document.getElementById(id);
+      m.classList.add('hidden');
+      m.classList.remove('flex');
+    }
+
+    let toastTimeout = null;
+    function showToast(msg, icon = '✅') {
+      const toast = document.getElementById('toastNotification');
+      document.getElementById('toastMessage').textContent = msg;
+      document.getElementById('toastIcon').textContent = icon;
+      toast.classList.remove('translate-y-20', 'opacity-0');
+      clearTimeout(toastTimeout);
+      toastTimeout = setTimeout(() => {
+        toast.classList.add('translate-y-20', 'opacity-0');
+      }, 3200);
+    }
+
+    // =========================================================================
+    // 13. INITIALIZATION ON PAGE LOAD
+    // =========================================================================
+    window.addEventListener('DOMContentLoaded', () => {
+      loadState();
+      updateTimerUI();
+      updateHeaderDashboard();
+      renderModules();
+      renderErrorLogTable();
+      populateFlashcardPhaseDropdowns();
+      filterFlashcards();
+      switchTab('tracker');
+    });
+  </script>
+</body>
+</html>
