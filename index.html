@@ -37,7 +37,6 @@
       color: #0F172A;
       overflow-x: hidden;
     }
-    /* Hide horizontal scrollbar on tab navigation while preserving swipe/scroll */
     .no-scrollbar::-webkit-scrollbar {
       display: none;
     }
@@ -220,7 +219,7 @@
           </div>
           <div class="flex items-baseline gap-1.5">
             <span id="masteredCountText" class="text-2xl font-extrabold text-white">0</span>
-            <span id="totalThemesCountText" class="text-xs text-slate-300">/ 39 modul (Fase 1 & 2)</span>
+            <span id="totalThemesCountText" class="text-xs text-slate-300">/ 26 modul (Fase 1–3)</span>
           </div>
           <div class="w-full bg-slate-700/80 rounded-full h-2 mt-2 overflow-hidden">
             <div id="masteryProgressBar" class="bg-sky-400 h-2 rounded-full transition-all duration-500" style="width: 0%"></div>
@@ -322,8 +321,8 @@
           <div class="py-1 text-rose-600">Min<span class="hidden sm:inline"> (Off)</span></div>
         </div>
 
-        <!-- Interactive Calendar Days Grid -->
-        <div id="interactiveCalendarGrid" class="grid grid-cols-7 gap-1 sm:gap-2 mt-1.5">
+        <!-- Interactive Calendar Days Grid (Uniform Precision Cells) -->
+        <div id="interactiveCalendarGrid" class="grid grid-cols-7 auto-rows-fr gap-1.5 sm:gap-2 mt-1.5">
           <!-- Populated dynamically by JS -->
         </div>
 
@@ -331,16 +330,16 @@
         <div class="flex flex-wrap items-center justify-between gap-3 mt-4 pt-3 border-t border-slate-100 text-[11px] text-slate-600">
           <div class="flex flex-wrap items-center gap-3">
             <span class="inline-flex items-center gap-1.5">
-              <span class="w-3.5 h-3.5 rounded bg-emerald-500 inline-block"></span> Selesai Belajar (✓)
+              <span class="w-3.5 h-3.5 rounded bg-emerald-500 text-white text-[9px] font-extrabold inline-flex items-center justify-center">✓</span> Selesai Belajar
             </span>
             <span class="inline-flex items-center gap-1.5">
-              <span class="w-3.5 h-3.5 rounded bg-sky-100 border border-sky-400 inline-block"></span> Sedang Berjalan (&lt; Target)
+              <span class="w-2.5 h-2.5 rounded-full bg-amber-400 inline-block"></span> Timer Berjalan
             </span>
             <span class="inline-flex items-center gap-1.5">
-              <span class="w-3.5 h-3.5 rounded bg-white border-2 border-navy-900 inline-block"></span> Hari Ini
+              <span class="w-2.5 h-2.5 rounded-full bg-navy-900 inline-block"></span> Belum Belajar
             </span>
             <span class="inline-flex items-center gap-1.5">
-              <span class="w-3.5 h-3.5 rounded bg-rose-50 border border-rose-200 inline-block"></span> Minggu Off (Istirahat)
+              <span class="w-3.5 h-3.5 rounded bg-rose-50 border border-rose-200 inline-block"></span> Minggu Off
             </span>
           </div>
           <span class="font-semibold text-navy-800">💡 Klik kotak tanggal untuk ceklis / batalkan kehadiran harian</span>
@@ -654,9 +653,9 @@
         <h3 class="text-base font-extrabold text-navy-900">Buat Flashcard Materi Baru</h3>
         <button onclick="closeModal('addFlashcardModal')" class="text-slate-400 hover:text-slate-600 font-bold">✕</button>
       </div>
-      <form onsubmit="saveNewFlashcard(event)" class="space-y-3 text-xs sm:text-sm">
+      <form id="addFlashcardForm" onsubmit="saveNewFlashcard(event)" class="space-y-3 text-xs sm:text-sm">
         <div>
-          <label class="block font-bold text-slate-700 mb-1">Fase</label>
+          <label class="block font-bold text-slate-700 mb-1">Fase & Tema Materi</label>
           <select id="newFcTopic" required class="w-full px-3 py-2 rounded-xl border border-slate-300 bg-white font-semibold">
             <!-- Populated dynamically with optgroup FASE 1: TWK, FASE 2: TIU, FASE 3: TKP -->
           </select>
@@ -908,7 +907,6 @@
     ];
 
     const INITIAL_ERROR_LOGS = [];
-
     const INITIAL_FLASHCARDS = [];
 
     // =========================================================================
@@ -981,14 +979,12 @@
         console.warn('Gagal memuat localStorage, menggunakan data default.', e);
       }
 
-      // Sync editable title UI
       const titleEl = document.getElementById('editableMainTitle');
       if (titleEl) {
         titleEl.textContent = appState.customTitle || 'JUDUL TULIS DISINI';
       }
       updateDocumentTitleWithTimer();
 
-      // Sync timer mode dropdown & initial seconds
       const modeSelect = document.getElementById('timerModeSelect');
       if (modeSelect) {
         modeSelect.value = String(appState.timerModeMinutes);
@@ -997,7 +993,6 @@
       timerRemainingSeconds = timerTotalSeconds;
       timerAccumulatedMsBeforeRun = 0;
 
-      // Initialize calendar view to current month
       const now = new Date();
       calViewYear = now.getFullYear();
       calViewMonth = now.getMonth();
@@ -1104,7 +1099,7 @@
     }
 
     // =========================================================================
-    // 5. DASHBOARD HEADER STATS & INTERACTIVE CALENDAR RENDERING
+    // 5. DASHBOARD HEADER STATS & UNIFORM INTERACTIVE CALENDAR RENDERING
     // =========================================================================
     function updateHeaderDashboard() {
       const today = getTodayISO();
@@ -1226,8 +1221,11 @@
       let activeDaysInMonth = 0;
       let cellsHTML = '';
 
+      // Identical fixed height across all empty and active cells so every row & column is 100% uniform
+      const cellSizeClass = 'h-12 sm:h-14 w-full';
+
       for (let i = 0; i < startOffset; i++) {
-        cellsHTML += `<div class="h-14 sm:h-16 rounded-xl bg-slate-50/60 border border-transparent"></div>`;
+        cellsHTML += `<div class="${cellSizeClass} rounded-xl bg-slate-50/60 border border-transparent"></div>`;
       }
 
       for (let day = 1; day <= daysInMonth; day++) {
@@ -1240,42 +1238,50 @@
         const target = getTargetMinutesForDate(iso);
         const log = appState.dailyLogs[iso] || { minutes: 0, completed: false };
         const isDone = log.completed || (target > 0 && log.minutes >= target);
-        const isPartial = !isDone && log.minutes > 0;
+        const isTimerActiveToday = isToday && timerRunning && !isDone;
+        const isPartial = !isDone && (log.minutes > 0 || isTimerActiveToday);
 
         if (isDone) activeDaysInMonth++;
 
         let cellClasses = 'bg-white border-slate-200 hover:border-emerald-400 text-slate-700';
-        let statusBadge = `<span class="text-[9px] sm:text-[10px] text-slate-400 leading-none truncate max-w-full">${isSunday ? 'Off' : target + 'm'}</span>`;
+        let statusDotHtml = `<span class="w-2 h-2 rounded-full bg-navy-900 inline-block shrink-0" title="Belum Belajar"></span>`;
+        let subLabelHtml = `<span class="text-[9px] font-semibold text-transparent leading-none select-none">&nbsp;</span>`;
 
         if (isDone) {
           cellClasses = 'bg-emerald-500 border-emerald-600 text-white shadow-sm hover:bg-emerald-600';
-          statusBadge = `<span class="text-[9px] sm:text-[10px] font-extrabold bg-white/20 px-1 py-0.5 rounded leading-none truncate max-w-full">✓${log.minutes}m</span>`;
+          statusDotHtml = `<span class="inline-flex items-center justify-center w-3.5 h-3.5 sm:w-4 sm:h-4 rounded-full bg-white text-emerald-700 text-[9px] sm:text-[10px] font-extrabold leading-none shrink-0" title="Selesai Belajar">✓</span>`;
+        } else if (isTimerActiveToday) {
+          cellClasses = 'bg-amber-50/80 border-amber-400 text-navy-900 hover:bg-amber-100/70';
+          statusDotHtml = `
+            <span class="relative flex h-2.5 w-2.5 shrink-0" title="Timer Sedang Berjalan">
+              <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+              <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-amber-500"></span>
+            </span>
+          `;
         } else if (isPartial) {
-          cellClasses = 'bg-sky-50 border-sky-400 text-sky-900 hover:bg-sky-100';
-          statusBadge = `<span class="text-[9px] sm:text-[10px] font-bold text-sky-700 leading-none truncate max-w-full">${log.minutes}m</span>`;
+          cellClasses = 'bg-sky-50 border-sky-300 text-sky-900 hover:bg-sky-100';
+          statusDotHtml = `<span class="w-2 h-2 rounded-full bg-amber-400 inline-block shrink-0" title="Sesi Berjalan"></span>`;
         } else if (isSunday) {
           cellClasses = 'bg-rose-50/70 border-rose-200/80 text-rose-700 hover:border-rose-400';
-          statusBadge = `<span class="text-[9px] sm:text-[10px] font-semibold text-rose-500 leading-none truncate max-w-full">Off</span>`;
+          statusDotHtml = `<span class="w-2 h-2 rounded-full bg-rose-400 inline-block shrink-0" title="Minggu Off"></span>`;
+          subLabelHtml = `<span class="text-[9px] font-bold text-rose-500 leading-none">Off</span>`;
         }
 
         const todayRing = isToday ? 'ring-2 ring-navy-900 ring-offset-1' : '';
-        const todayIndicator = isToday
-          ? `<span class="inline-flex items-center justify-center rounded ${isDone ? 'bg-white text-emerald-700' : 'bg-navy-900 text-white'} px-1 py-0.5 text-[7px] sm:text-[8px] font-extrabold uppercase leading-none shrink-0"><span class="sm:hidden">•</span><span class="hidden sm:inline">Hari Ini</span></span>`
-          : '';
 
         cellsHTML += `
           <button
             type="button"
             onclick="toggleCalendarDate('${iso}')"
             title="Klik untuk ceklis/batal belajar pada ${formatIndonesianDate(iso)}"
-            class="h-14 sm:h-16 min-w-0 overflow-hidden rounded-xl border p-1 sm:p-2 flex flex-col justify-between items-stretch text-left transition cursor-pointer select-none ${cellClasses} ${todayRing}"
+            class="${cellSizeClass} min-w-0 overflow-hidden rounded-xl border px-1.5 py-1.5 sm:px-2 sm:py-1.5 flex flex-col justify-between items-stretch text-left transition cursor-pointer select-none ${cellClasses} ${todayRing}"
           >
-            <div class="w-full flex items-center justify-between gap-0.5 min-w-0">
+            <div class="w-full flex items-center justify-between gap-1 min-w-0">
               <span class="text-[11px] sm:text-sm font-extrabold leading-none shrink-0">${day}</span>
-              ${todayIndicator}
+              ${statusDotHtml}
             </div>
-            <div class="w-full flex justify-end min-w-0">
-              ${statusBadge}
+            <div class="w-full flex justify-end items-end leading-none">
+              ${subLabelHtml}
             </div>
           </button>
         `;
@@ -1290,8 +1296,57 @@
     }
 
     // =========================================================================
-    // 6. REAL-TIME HIGH-PRECISION STUDY TIMER & INSTANT FLOATING NOTCH
+    // 6. REAL-TIME HIGH-PRECISION STUDY TIMER, SOUND ALERT & FLOATING NOTCH
     // =========================================================================
+    let sharedAudioCtx = null;
+
+    function unlockAudioContext() {
+      try {
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        if (!AudioCtx) return;
+        if (!sharedAudioCtx) {
+          sharedAudioCtx = new AudioCtx();
+        }
+        if (sharedAudioCtx.state === 'suspended') {
+          sharedAudioCtx.resume();
+        }
+      } catch (e) {
+        // Ignore audio errors on restricted devices
+      }
+    }
+
+    function playTimerCompleteSound() {
+      try {
+        unlockAudioContext();
+        if (!sharedAudioCtx) return;
+
+        const now = sharedAudioCtx.currentTime;
+        const notes = [659.25, 880.00, 1046.50]; // E5 -> A5 -> C6 chime
+
+        notes.forEach((freq, index) => {
+          const osc = sharedAudioCtx.createOscillator();
+          const gain = sharedAudioCtx.createGain();
+          const startTime = now + index * 0.16;
+          const duration = index === notes.length - 1 ? 0.55 : 0.22;
+
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(freq, startTime);
+
+          gain.gain.setValueAtTime(0.0001, startTime);
+          gain.gain.exponentialRampToValueAtTime(0.22, startTime + 0.025);
+          gain.gain.exponentialRampToValueAtTime(0.0001, startTime + duration);
+
+          osc.connect(gain);
+          gain.connect(sharedAudioCtx.destination);
+
+          osc.start(startTime);
+          osc.stop(startTime + duration + 0.02);
+        });
+      } catch (e) {
+        console.warn('Audio notification blocked or unsupported:', e);
+      }
+    }
+
     function formatSecondsToMMSS(totalSeconds) {
       const safeSec = Math.max(0, Math.floor(totalSeconds));
       const m = Math.floor(safeSec / 60);
@@ -1412,11 +1467,13 @@
           timerLoggedWholeMinutes = totalSessionMin;
         }
         stopTimerInternal(true);
+        playTimerCompleteSound();
         showToast(`Alhamdulillah! Target ${totalSessionMin} menit selesai & tercatat otomatis!`, '🎉');
       }
     }
 
     function toggleTimer() {
+      unlockAudioContext();
       const btn = document.getElementById('btnTimerToggle');
       const liveBadge = document.getElementById('timerLiveBadge');
       const card = document.getElementById('studyTimerCard');
@@ -1443,6 +1500,7 @@
       if (liveBadge) liveBadge.classList.remove('hidden');
       if (card) card.classList.add('border-emerald-500/60');
 
+      renderInteractiveCalendar();
       updateTimerUI();
       clearInterval(timerInterval);
       timerInterval = setInterval(syncRealTimeTimerTick, 100);
@@ -1468,6 +1526,7 @@
       if (liveBadge) liveBadge.classList.add('hidden');
       if (card) card.classList.remove('border-emerald-500/60');
 
+      renderInteractiveCalendar();
       updateTimerUI();
     }
 
@@ -1579,7 +1638,7 @@
       ).join('');
     }
 
-    function populateFlashcardPhaseDropdowns() {
+    function populateFlashcardPhaseDropdowns(selectedTopicOverride = null) {
       const filterEl = document.getElementById('fcTopicFilter');
       const modalEl = document.getElementById('newFcTopic');
       const currentFilterVal = filterEl ? filterEl.value : 'ALL';
@@ -1599,16 +1658,27 @@
       }
 
       if (modalEl) {
+        const defaultTarget = selectedTopicOverride || 'TIU - Silogisme';
         let modalHtml = '';
         FLASHCARD_PHASE_GROUPS.forEach(group => {
           modalHtml += `<optgroup label="${group.label}">`;
           group.options.forEach(opt => {
-            modalHtml += `<option value="${opt}" ${opt === 'TIU - Silogisme' ? 'selected' : ''}>${opt}</option>`;
+            modalHtml += `<option value="${opt}" ${opt === defaultTarget ? 'selected' : ''}>${opt}</option>`;
           });
           modalHtml += `</optgroup>`;
         });
         modalEl.innerHTML = modalHtml;
       }
+    }
+
+    function mapModuleToFlashcardTopic(category, materialLabel) {
+      const safeCat = ['TWK', 'TIU', 'TKP'].includes(category) ? category : 'TKP';
+      const cleanName = (materialLabel || '').replace(/^\d+\.\s*/, '').trim();
+      const candidate = `${safeCat} - ${cleanName}`;
+      for (const grp of FLASHCARD_PHASE_GROUPS) {
+        if (grp.options.includes(candidate)) return candidate;
+      }
+      return `${safeCat} - ${cleanName}`;
     }
 
     // =========================================================================
@@ -1688,6 +1758,7 @@
         const pct = Math.round((doneCount / 6) * 100);
         const pBadge = phaseBadgeMap[mod.phase] || phaseBadgeMap.FASE1_TWK;
         const safeCat = mod.category === 'TO' ? 'TKP' : mod.category;
+        const escapedMat = mod.materialLabel.replace(/'/g, "\\'");
 
         let cardBorder = 'border-slate-200';
         let statusBadge = `<span class="px-2.5 py-1 rounded-lg text-[11px] font-bold bg-slate-100 text-slate-600">Belum Mulai</span>`;
@@ -1741,8 +1812,11 @@
               </div>
 
               <div class="flex flex-wrap items-center gap-2 shrink-0">
-                <button onclick="openErrorModalForTheme('${safeCat}', '${mod.materialLabel.replace(/'/g, "\\'")}')" class="px-3 py-2 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 text-xs font-bold transition">
+                <button onclick="openErrorModalForTheme('${safeCat}', '${escapedMat}')" class="px-3 py-2 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 text-xs font-bold transition">
                   + Catat Error
+                </button>
+                <button onclick="openAddFlashcardForTheme('${safeCat}', '${escapedMat}')" class="px-3 py-2 rounded-xl bg-sky-50 hover:bg-sky-100 text-sky-700 border border-sky-200 text-xs font-bold transition">
+                  + Buat Flashcard
                 </button>
               </div>
             </div>
@@ -1751,9 +1825,9 @@
               ${stepsHtml}
             </div>
 
-            <div class="mt-3 pt-2.5 border-t border-slate-100 flex items-center justify-between gap-4 text-[11px] text-slate-500">
-              <span class="truncate">💡 ${mod.notes}</span>
-              <span class="font-bold text-navy-800 shrink-0">${pct}% Selesai</span>
+            <div class="mt-3 pt-2.5 border-t border-slate-100 flex flex-col sm:flex-row sm:items-start justify-between gap-2 text-xs text-slate-600">
+              <span class="leading-relaxed break-words">💡 ${mod.notes}</span>
+              <span class="font-extrabold text-navy-800 shrink-0 self-end sm:self-start">${pct}% Selesai</span>
             </div>
           </div>
         `;
@@ -1848,7 +1922,7 @@
       renderErrorLogTable();
       updateHeaderDashboard();
       closeModal('errorModal');
-      showToast('Catatan weakspot berhasil disimpan!', '🎯');
+      showToast('Tersimpan ke Tabel Error Log & Weakspot!', '🎯');
     }
 
     function toggleErrorStatus(id) {
@@ -1896,7 +1970,7 @@
       if (filteredFlashcards.length === 0) {
         document.getElementById('fcCounterText').textContent = '0 Kartu';
         document.getElementById('fcTopicBadge').textContent = 'Belum Ada Kartu';
-        document.getElementById('fcFrontText').textContent = 'Belum ada flashcard. Klik tombol "+ Tambah Kartu" di atas untuk membuat kartu ringkasan materi Anda.';
+        document.getElementById('fcFrontText').textContent = 'Belum ada flashcard. Klik tombol "+ Tambah Kartu" di atas atau "+ Buat Flashcard" di blok tema untuk membuat kartu ringkasan materi Anda.';
         document.getElementById('fcBackText').textContent = 'Tambahkan konsep penting, rumus cepat, atau poin evaluasi ke dalam flashcard.';
         document.getElementById('fcHintText').textContent = '';
         return;
@@ -1963,11 +2037,23 @@
     }
 
     function openAddFlashcardModal() {
+      const form = document.getElementById('addFlashcardForm');
+      if (form) form.reset();
       populateFlashcardPhaseDropdowns();
       const currentFilter = document.getElementById('fcTopicFilter').value;
       if (currentFilter && currentFilter !== 'ALL') {
         document.getElementById('newFcTopic').value = currentFilter;
       }
+      openModal('addFlashcardModal');
+    }
+
+    function openAddFlashcardForTheme(category, materialLabel) {
+      const form = document.getElementById('addFlashcardForm');
+      if (form) form.reset();
+      const targetTopic = mapModuleToFlashcardTopic(category, materialLabel);
+      populateFlashcardPhaseDropdowns(targetTopic);
+      const modalSelect = document.getElementById('newFcTopic');
+      if (modalSelect) modalSelect.value = targetTopic;
       openModal('addFlashcardModal');
     }
 
@@ -1984,10 +2070,14 @@
       appState.flashcards.unshift(newCard);
       saveState();
       populateFlashcardPhaseDropdowns();
+      const filterEl = document.getElementById('fcTopicFilter');
+      if (filterEl && filterEl.value !== 'ALL' && filterEl.value !== newCard.topic) {
+        filterEl.value = 'ALL';
+      }
       filterFlashcards();
       updateHeaderDashboard();
       closeModal('addFlashcardModal');
-      showToast('Flashcard baru ditambahkan!', '🗂️');
+      showToast('Tersimpan ke Tab Flashcard Materi Kunci!', '🗂️');
     }
 
     // =========================================================================
