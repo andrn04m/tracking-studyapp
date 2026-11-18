@@ -76,7 +76,7 @@
 <body class="min-h-screen flex flex-col">
   <!-- FLOATING TIMER NOTCH (MUNCUL SAAT TIMER AKTIF & BLOK TIMER TIDAK TERLIHAT) -->
   <div id="floatingTimerNotch" class="fixed top-3 left-1/2 -translate-x-1/2 z-50 hidden transition-all duration-300 w-[94%] max-w-lg">
-    <div class="bg-navy-950/95 backdrop-blur-md text-white px-4 py-2.5 rounded-full shadow-2xl border border-emerald-500/50 flex flex-col gap-1.5">
+    <div class="bg-navy-950/95 backdrop-blur-md text-white px-3.5 py-2.5 rounded-2xl shadow-2xl border border-emerald-500/50 flex flex-col gap-2">
       <div class="flex items-center justify-between gap-2">
         <!-- Area Tengah / Kiri yang Dapat Diklik untuk Scroll ke Blok Timer -->
         <div onclick="scrollToTimerBlock()" title="Klik untuk kembali ke blok Study Timer" class="flex-1 flex items-center justify-between gap-2 cursor-pointer group rounded-full px-1.5 py-0.5 hover:bg-white/10 transition">
@@ -102,6 +102,26 @@
       <!-- Notch Progress Bar -->
       <div onclick="scrollToTimerBlock()" title="Klik untuk kembali ke blok Study Timer" class="w-full bg-slate-800 rounded-full h-1.5 overflow-hidden cursor-pointer">
         <div id="notchProgressBar" class="bg-gradient-to-r from-emerald-400 to-sky-400 h-1.5 rounded-full transition-all duration-200" style="width: 0%"></div>
+      </div>
+
+      <!-- Integrated Notch Tabs (Muncul otomatis saat bilah tab utama tidak terlihat di layar) -->
+      <div id="notchTabsBar" class="hidden pt-1.5 border-t border-white/10">
+        <div class="flex items-center justify-between sm:justify-around gap-1.5 overflow-x-auto no-scrollbar" role="tablist">
+          <button type="button" onclick="switchTabFromNotch('tracker')" id="notch-tab-tracker" class="notch-tab-btn shrink-0 px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-500 text-navy-950 flex items-center gap-1 transition">
+            <span>📅</span><span>Tracker</span>
+          </button>
+          <button type="button" onclick="switchTabFromNotch('errorlog')" id="notch-tab-errorlog" class="notch-tab-btn shrink-0 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-white/10 text-slate-200 hover:bg-white/20 flex items-center gap-1 transition">
+            <span>🎯</span><span>Error Log</span>
+            <span id="notchBadgeErrorCount" class="px-1.5 py-0.2 text-[9px] rounded-full bg-rose-500 text-white font-extrabold">0</span>
+          </button>
+          <button type="button" onclick="switchTabFromNotch('flashcards')" id="notch-tab-flashcards" class="notch-tab-btn shrink-0 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-white/10 text-slate-200 hover:bg-white/20 flex items-center gap-1 transition">
+            <span>🗂️</span><span>Flashcard</span>
+            <span id="notchBadgeFlashcardCount" class="px-1.5 py-0.2 text-[9px] rounded-full bg-sky-500 text-navy-950 font-extrabold">0</span>
+          </button>
+          <button type="button" onclick="switchTabFromNotch('sync')" id="notch-tab-sync" class="notch-tab-btn shrink-0 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-white/10 text-slate-200 hover:bg-white/20 flex items-center gap-1 transition">
+            <span>💾</span><span>Save/Load</span>
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -245,7 +265,7 @@
   </header>
 
   <!-- NAVIGATION TABS -->
-  <nav class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm">
+  <nav id="mainStickyNav" class="bg-white border-b border-slate-200 relative z-30 shadow-sm">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="flex overflow-x-auto no-scrollbar gap-1 sm:gap-2 py-2" role="tablist">
         <button onclick="switchTab('tracker')" id="tab-btn-tracker" class="tab-btn active-tab whitespace-nowrap px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-2 transition">
@@ -1159,6 +1179,10 @@
       document.getElementById('streakCountText').textContent = calculateStreak();
       document.getElementById('badgeErrorCount').textContent = appState.errorLogs.length;
       document.getElementById('badgeFlashcardCount').textContent = appState.flashcards.length;
+      const notchErrBadge = document.getElementById('notchBadgeErrorCount');
+      const notchFcBadge = document.getElementById('notchBadgeFlashcardCount');
+      if (notchErrBadge) notchErrBadge.textContent = appState.errorLogs.length;
+      if (notchFcBadge) notchFcBadge.textContent = appState.flashcards.length;
 
       renderInteractiveCalendar();
     }
@@ -1417,15 +1441,33 @@
       return rect.bottom <= 52;
     }
 
+    function isMainNavOutOfView() {
+      const navEl = document.getElementById('mainStickyNav');
+      if (!navEl) return false;
+      const rect = navEl.getBoundingClientRect();
+      return rect.bottom <= 16;
+    }
+
     function updateFloatingNotchVisibility() {
       const notchEl = document.getElementById('floatingTimerNotch');
+      const notchTabsEl = document.getElementById('notchTabsBar');
       if (!notchEl) return;
 
-      const outOfView = isTimerCardOutOfView();
-      if (outOfView) {
+      const timerOut = isTimerCardOutOfView();
+      const navOut = isMainNavOutOfView();
+
+      if (timerOut || navOut) {
         notchEl.classList.remove('hidden');
       } else {
         notchEl.classList.add('hidden');
+      }
+
+      if (notchTabsEl) {
+        if (navOut) {
+          notchTabsEl.classList.remove('hidden');
+        } else {
+          notchTabsEl.classList.add('hidden');
+        }
       }
     }
 
@@ -2233,6 +2275,24 @@
       });
       const activeBtn = document.getElementById(`tab-btn-${tabId}`);
       activeBtn.className = 'tab-btn active-tab whitespace-nowrap px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold bg-navy-900 text-white shadow-sm flex items-center gap-2 transition';
+
+      document.querySelectorAll('.notch-tab-btn').forEach(btn => {
+        btn.className = 'notch-tab-btn shrink-0 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-white/10 text-slate-200 hover:bg-white/20 flex items-center gap-1 transition';
+      });
+      const activeNotchBtn = document.getElementById(`notch-tab-${tabId}`);
+      if (activeNotchBtn) {
+        activeNotchBtn.className = 'notch-tab-btn shrink-0 px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-500 text-navy-950 flex items-center gap-1 transition';
+      }
+    }
+
+    function switchTabFromNotch(tabId) {
+      switchTab(tabId);
+      const mainEl = document.querySelector('main');
+      if (mainEl) {
+        const notchHeight = document.getElementById('floatingTimerNotch')?.offsetHeight || 96;
+        const targetY = window.scrollY + mainEl.getBoundingClientRect().top - (notchHeight + 16);
+        window.scrollTo({ top: Math.max(0, targetY), behavior: 'smooth' });
+      }
     }
 
     function openModal(id) {
