@@ -1236,12 +1236,25 @@
     }
 
     function usernameToInternalEmail(rawUsername) {
-      const clean = (rawUsername || '').trim().toLowerCase().replace(/[^a-z0-9_.-]/g, '');
-      return `${clean}@casn-tracker.app`;
+      const clean = sanitizeUsername(rawUsername);
+      const caseTag = Array.from(clean)
+        .map(ch => (ch >= 'A' && ch <= 'Z') ? 'u' : ((ch >= 'a' && ch <= 'z') ? 'l' : 'x'))
+        .join('');
+      return `${clean.toLowerCase()}__${caseTag}@casn-tracker.app`;
     }
 
     function sanitizeUsername(rawUsername) {
-      return (rawUsername || '').trim().toLowerCase().replace(/[^a-z0-9_.-]/g, '');
+      return (rawUsername || '').trim().replace(/[^a-zA-Z0-9_.-]/g, '');
+    }
+
+    function extractDisplayUsername(user) {
+      if (!user) return '';
+      if (user.displayName && user.displayName.trim()) return user.displayName.trim();
+      if (user.email) {
+        const localPart = user.email.split('@')[0];
+        return localPart.includes('__') ? localPart.split('__')[0] : localPart;
+      }
+      return user.uid.slice(0, 8);
     }
 
     async function hashStringSHA256(str) {
@@ -1325,7 +1338,7 @@
       const profCloudSL = document.getElementById('profileModalCloudSaveLoad');
 
       if (user) {
-        const displayUsername = user.email ? user.email.split('@')[0] : user.uid.slice(0, 8);
+        const displayUsername = extractDisplayUsername(user);
         if (badgeDot) badgeDot.className = 'w-2 h-2 rounded-full bg-emerald-400 animate-pulse';
         if (badgeName) badgeName.textContent = `@${displayUsername}`;
         if (btnLogout) {
@@ -1462,7 +1475,7 @@
         const userDocRef = doc(fbDb, 'users', currentFbUser.uid);
         const stateSnapshot = window.getCurrentAppState();
         await setDoc(userDocRef, {
-          username: currentFbUser.email ? currentFbUser.email.split('@')[0] : currentFbUser.uid,
+          username: extractDisplayUsername(currentFbUser),
           updatedAt: new Date().toISOString(),
           appState: stateSnapshot
         }, { merge: true });
@@ -1488,7 +1501,7 @@
         const userDocRef = doc(fbDb, 'users', currentFbUser.uid);
         const stateSnapshot = window.getCurrentAppState();
         await setDoc(userDocRef, {
-          username: currentFbUser.email ? currentFbUser.email.split('@')[0] : currentFbUser.uid,
+          username: extractDisplayUsername(currentFbUser),
           updatedAt: new Date().toISOString(),
           appState: stateSnapshot
         }, { merge: true });
@@ -1534,7 +1547,7 @@
         return { ok: true, message: 'Profil lokal berhasil diperbarui!' };
       }
 
-      const oldUsername = currentFbUser.email ? currentFbUser.email.split('@')[0] : '';
+      const oldUsername = extractDisplayUsername(currentFbUser);
       let activeUsername = oldUsername;
 
       // 1. Update Username if changed
@@ -1550,6 +1563,9 @@
 
         const newInternalEmail = usernameToInternalEmail(cleanNewUser);
         await updateEmail(currentFbUser, newInternalEmail);
+        if (typeof currentFbUser.updateProfile === 'function') {
+          try { await currentFbUser.updateProfile({ displayName: cleanNewUser }); } catch (e) {}
+        }
 
         const oldVaultRef = doc(fbDb, 'recovery_vault', oldUsername);
         const oldVaultSnap = await getDoc(oldVaultRef);
@@ -1596,7 +1612,7 @@
 
     window.getActiveAccountInfo = function() {
       if (currentFbUser) {
-        const uname = currentFbUser.email ? currentFbUser.email.split('@')[0] : currentFbUser.uid.slice(0, 8);
+        const uname = extractDisplayUsername(currentFbUser);
         return { isCloud: true, username: uname };
       }
       return {
@@ -1689,8 +1705,18 @@
         setConnectionStatus('connected');
         window.showToast(`Selamat datang kembali, @${username}!`, '👋');
       } catch (err) {
+        // Fallback kompatibilitas untuk akun lama yang dibuat sebelum penegakan huruf besar/kecil
+        const isExactLowercase = username === username.toLowerCase();
+        if (isExactLowercase) {
+          try {
+            await signInWithEmailAndPassword(fbAuth, `${username}@casn-tracker.app`, password);
+            setConnectionStatus('connected');
+            window.showToast(`Selamat datang kembali, @${username}!`, '👋');
+            return;
+          } catch (legacyErr) {}
+        }
         setConnectionStatus(navigator.onLine ? 'connected' : 'disconnected');
-        showAuthAlert('Username atau password salah, atau akun belum terdaftar.');
+        showAuthAlert('Username (perhatikan huruf besar/kecil) atau password salah, atau akun belum terdaftar.');
       } finally {
         btn.disabled = false;
         btn.textContent = 'Masuk';
@@ -1769,7 +1795,7 @@
       try {
         const vaultSnap = await getDoc(doc(fbDb, 'recovery_vault', username));
         if (!vaultSnap.exists()) {
-          showAuthAlert('Username tidak ditemukan.');
+          showAuthAlert('Username tidak ditemukan (perhatikan huruf besar/kecil).');
           return;
         }
         const vaultData = vaultSnap.data();
