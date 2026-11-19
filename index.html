@@ -494,8 +494,8 @@
     </div>
   </header>
 
-  <!-- STICKY NAVIGATION TABS -->
-  <nav id="mainStickyNav" class="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200 shadow-sm">
+  <!-- NAVIGATION TABS (SCROLLS NATURALLY INTO FLOATING NOTCH) -->
+  <nav id="mainStickyNav" class="bg-white/95 backdrop-blur-md border-b border-slate-200 shadow-sm">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2.5 flex items-center gap-2 overflow-x-auto no-scrollbar">
       <button type="button" id="tab-btn-tracker" onclick="switchTab('tracker')" class="tab-btn active-tab whitespace-nowrap px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold bg-navy-900 text-white shadow-sm flex items-center gap-2 transition">
         <span>📅</span>
@@ -2876,7 +2876,7 @@
       const navEl = document.getElementById('mainStickyNav');
       if (!navEl) return false;
       const rect = navEl.getBoundingClientRect();
-      return rect.bottom <= 16;
+      return rect.bottom <= 24;
     }
 
     function updateFloatingNotchVisibility() {
