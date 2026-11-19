@@ -3,7 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>JUDUL TULIS DISINI • Study & Mastery Tracker</title>
+  <title>Tracker Study Mastery</title>
+  <link rel="icon" type="image/png" href="https://cdn-icons-png.flaticon.com/512/15567/15567515.png" />
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -178,7 +179,7 @@
           <form id="authForm-register" onsubmit="handleAuthRegister(event)" class="hidden space-y-3 text-xs sm:text-sm">
             <div>
               <label class="block text-xs font-bold text-slate-700 mb-1">Username Baru</label>
-              <input type="text" id="regUsername" required minlength="3" pattern="[a-zA-Z0-9_.-]+" title="Gunakan huruf, angka, titik, atau garis bawah tanpa spasi" placeholder="Contoh: andreano_casn" class="w-full px-3.5 py-2 rounded-xl border border-slate-300 text-slate-900 focus:outline-none focus:border-indigo-600 focus:ring-2 focus:ring-indigo-600/15" />
+              <input type="text" id="regUsername" required minlength="3" pattern="[a-zA-Z0-9_.-]+" title="Gunakan huruf, angka, titik, atau garis bawah tanpa spasi" placeholder="Contoh: Fufufafa is Back!" class="w-full px-3.5 py-2 rounded-xl border border-slate-300 text-slate-900 focus:outline-none focus:border-indigo-600 focus:ring-2 focus:ring-indigo-600/15" />
             </div>
             <div>
               <label class="block text-xs font-bold text-slate-700 mb-1">Password Baru (Min. 6 Karakter)</label>
@@ -191,7 +192,7 @@
             </div>
             <div>
               <label class="block text-xs font-bold text-slate-700 mb-1">Kode Pemulihan (PIN / Kata Kunci)</label>
-              <input type="text" id="regRecoveryCode" required minlength="4" placeholder="Contoh: DKI2027 (untuk reset sandi jika lupa)" class="w-full px-3.5 py-2 rounded-xl border border-slate-300 text-slate-900 focus:outline-none focus:border-indigo-600 focus:ring-2 focus:ring-indigo-600/15" />
+              <input type="text" id="regRecoveryCode" required minlength="4" placeholder="Contoh: EL SAWITE (untuk reset sandi jika lupa)" class="w-full px-3.5 py-2 rounded-xl border border-slate-300 text-slate-900 focus:outline-none focus:border-indigo-600 focus:ring-2 focus:ring-indigo-600/15" />
             </div>
             <div>
               <label class="block text-xs font-bold text-slate-700 mb-1">Email Pemulihan <span class="text-slate-400 font-normal">(Opsional)</span></label>
@@ -303,151 +304,189 @@
   <header id="mainTopHeader" class="bg-gradient-to-r from-navy-950 via-navy-900 to-navy-800 text-white shadow-lg border-b border-slate-700/60">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5">
       <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-5">
-        <!-- Editable Title & Account/Sync Bar -->
-        <div class="space-y-2 flex-1 min-w-0">
-          <div class="group relative flex items-center gap-2.5 max-w-full">
-            <h1
-              id="editableMainTitle"
-              contenteditable="true"
-              spellcheck="false"
-              onblur="saveCustomTitle()"
-              onkeydown="handleTitleKeydown(event)"
-              title="Klik untuk mengedit judul"
-              class="text-xl sm:text-2xl lg:text-3xl font-extrabold tracking-tight text-white outline-none rounded-lg px-2 -mx-2 py-1 border border-transparent hover:border-white/25 focus:border-emerald-400 focus:bg-white/10 transition cursor-text break-words min-w-0"
-            >JUDUL TULIS DISINI</h1>
+        <!-- Left Cluster: Profile Avatar + Log Out on Far Left, Editable Title & Action Bar -->
+        <div class="flex items-start gap-3.5 sm:gap-4 flex-1 min-w-0">
+          <!-- Profile Avatar + Log Out Button (Far Left) -->
+          <div class="flex flex-col items-center gap-1.5 shrink-0">
             <button
               type="button"
-              onclick="focusEditableTitle()"
-              title="Edit Judul"
-              class="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-slate-300 hover:text-white transition shrink-0"
+              onclick="openProfileSettingsModal()"
+              title="Klik untuk Pengaturan Profil, Foto, Password & Save/Load"
+              class="relative group w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-white/10 hover:bg-white/20 border-2 border-emerald-400/50 hover:border-emerald-400 flex items-center justify-center overflow-hidden shadow-lg transition cursor-pointer"
             >
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
+              <img id="headerProfileImg" src="" alt="Foto Profil" class="hidden w-full h-full object-cover" />
+              <span id="headerProfileIcon" class="text-2xl sm:text-3xl select-none">🧑‍🎓</span>
+              <span class="absolute inset-x-0 bottom-0 bg-navy-950/80 text-[9px] font-bold text-emerald-300 py-0.5 text-center opacity-0 group-hover:opacity-100 transition">Edit</span>
+            </button>
+            <button
+              type="button"
+              id="btnHeaderLogout"
+              onclick="handleHeaderAuthAction()"
+              class="w-full px-2 py-1 rounded-lg text-[10px] font-extrabold bg-rose-500/20 hover:bg-rose-500/35 text-rose-200 border border-rose-400/35 transition text-center"
+            >
+              Log Out
             </button>
           </div>
 
-          <!-- Header Account & Quick Action Buttons -->
-          <div class="flex flex-wrap items-center gap-2 pt-0.5">
-            <div class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-white/10 text-white border border-white/15">
-              <span id="headerConnDot" class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
-              <span id="headerConnStatusText">Menyambungkan</span>
+          <!-- Editable Title & Account/Sync Bar -->
+          <div class="space-y-2 flex-1 min-w-0">
+            <div class="group relative flex items-center gap-2.5 max-w-full">
+              <h1
+                id="editableMainTitle"
+                contenteditable="true"
+                spellcheck="false"
+                onblur="saveCustomTitle()"
+                onkeydown="handleTitleKeydown(event)"
+                title="Klik untuk mengedit judul"
+                class="text-xl sm:text-2xl lg:text-3xl font-extrabold tracking-tight text-white outline-none rounded-lg px-2 -mx-2 py-1 border border-transparent hover:border-white/25 focus:border-emerald-400 focus:bg-white/10 transition cursor-text break-words min-w-0"
+              >JUDUL TULIS DISINI</h1>
+              <button
+                type="button"
+                onclick="focusEditableTitle()"
+                title="Edit Judul"
+                class="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-slate-300 hover:text-white transition shrink-0"
+              >
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
+              </button>
             </div>
 
-            <button type="button" onclick="openAuthGateModal()" id="headerAccountBadge" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-400/30 transition">
-              <span id="headerAccountDot" class="w-2 h-2 rounded-full bg-amber-400"></span>
-              <span id="headerAccountName">Mode Lokal</span>
-            </button>
+            <!-- Header Account & Quick Action Buttons -->
+            <div class="flex flex-wrap items-center gap-2 pt-0.5">
+              <div class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-white/10 text-white border border-white/15">
+                <span id="headerConnDot" class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
+                <span id="headerConnStatusText">Menyambungkan</span>
+              </div>
 
-            <button onclick="openBackupRestoreModal()" class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold bg-white/10 hover:bg-white/20 text-white border border-white/20 transition shadow-sm">
-              <span>💾</span>
-              <span>Save / Load Progress</span>
-            </button>
+              <button type="button" onclick="openProfileSettingsModal()" id="headerAccountBadge" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-400/30 transition">
+                <span id="headerAccountDot" class="w-2 h-2 rounded-full bg-amber-400"></span>
+                <span id="headerAccountName">Mode Lokal</span>
+              </button>
 
-            <button type="button" onclick="openFirebaseConfigModal()" title="Pengaturan Firebase" aria-label="Pengaturan Firebase" class="p-1.5 rounded-xl text-xs font-bold bg-white/10 hover:bg-white/20 text-white border border-white/20 transition shadow-sm">
-              ⚙️
-            </button>
+              <!-- Local Mode: Combined Button -->
+              <button id="btnHeaderCombinedSaveLoad" type="button" onclick="openBackupRestoreModal()" class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold bg-white/10 hover:bg-white/20 text-white border border-white/20 transition shadow-sm">
+                <span>💾</span>
+                <span>Save / Load Progress</span>
+              </button>
 
-            <button type="button" id="btnHeaderLogout" onclick="handleAuthLogout()" class="hidden inline-flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-bold bg-rose-500/20 hover:bg-rose-500/30 text-rose-200 border border-rose-400/30 transition">
-              <span>Keluar</span>
-            </button>
+              <!-- Cloud Mode: Separated Save & Load Buttons -->
+              <div id="headerCloudSaveLoadGroup" class="hidden flex-wrap items-center gap-1.5">
+                <button type="button" onclick="saveProgressToCloudManual()" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-500 text-white border border-emerald-400/40 transition shadow-sm">
+                  <span>☁️</span>
+                  <span>Save Progress</span>
+                </button>
+                <button type="button" onclick="loadProgressFromCloudManual()" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-sky-600 hover:bg-sky-500 text-white border border-sky-400/40 transition shadow-sm">
+                  <span>🔄</span>
+                  <span>Load Progress</span>
+                </button>
+              </div>
+
+              <button type="button" onclick="openFirebaseConfigModal()" title="Pengaturan Firebase" aria-label="Pengaturan Firebase" class="p-1.5 rounded-xl text-xs font-bold bg-white/10 hover:bg-white/20 text-white border border-white/20 transition shadow-sm">
+                ⚙️
+              </button>
+            </div>
           </div>
         </div>
 
-        <!-- Built-in Study Timer Widget -->
-        <div id="studyTimerCard" class="w-full lg:w-auto bg-navy-950/70 backdrop-blur border border-slate-700/80 rounded-2xl p-3.5 sm:p-4 flex flex-col sm:flex-row items-center justify-between lg:justify-start gap-3.5 sm:gap-4 shadow-inner transition-all">
-          <div class="text-center sm:text-left">
-            <div class="flex items-center justify-center sm:justify-start gap-2 mb-1">
-              <span class="text-[11px] uppercase tracking-wider font-bold text-emerald-400">Study Timer</span>
-              <span id="timerLiveBadge" class="hidden inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-500/20 text-emerald-300 border border-emerald-400/40">
-                <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span>
-                LIVE
-              </span>
-              <select id="timerModeSelect" onchange="changeTimerMode()" class="bg-navy-800 text-xs font-semibold text-slate-100 border border-slate-600 rounded-md px-2.5 py-1 focus:outline-none focus:border-emerald-400">
+        <!-- Study Timer Widget (Right Cluster in Header) -->
+        <div id="studyTimerCard" class="bg-navy-950/75 border border-slate-700/80 rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row lg:flex-col xl:flex-row items-stretch sm:items-center justify-between gap-4 shrink-0 transition">
+          <div class="space-y-1.5">
+            <div class="flex items-center gap-2">
+              <span class="text-[11px] font-extrabold uppercase tracking-wider text-emerald-400">Study Timer</span>
+              <select id="timerModeSelect" onchange="changeTimerMode()" aria-label="Pilih Durasi Target" class="bg-navy-900 text-white text-xs font-bold px-2.5 py-1 rounded-lg border border-slate-600 focus:outline-none focus:border-emerald-400 cursor-pointer">
                 <option value="30">30 Menit</option>
                 <option value="60">60 Menit</option>
                 <option value="90">90 Menit</option>
                 <option value="120">120 Menit</option>
               </select>
+              <span id="timerLiveBadge" class="hidden inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-500/20 text-emerald-300 border border-emerald-400/40">
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span>
+                <span>LIVE</span>
+              </span>
             </div>
-            <div id="timerDisplay" class="text-3xl sm:text-4xl font-extrabold font-mono tracking-wider text-white tabular-nums">
-              30:00
+            <div class="flex items-baseline gap-3">
+              <span id="timerDisplay" class="font-mono text-3xl sm:text-4xl font-extrabold tracking-wider text-white tabular-nums">30:00</span>
+              <button id="btnCommitSession" type="button" onclick="commitCurrentTimerSession()" class="hidden px-2.5 py-1 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-400/40 text-xs font-bold transition">
+                ✓ Catat +1m
+              </button>
             </div>
           </div>
 
-          <div class="flex flex-wrap items-center justify-center gap-2">
-            <button id="btnTimerToggle" onclick="toggleTimer()" class="px-4 py-2.5 rounded-xl font-bold text-sm bg-emerald-600 hover:bg-emerald-500 text-white shadow-md shadow-emerald-950/50 transition flex items-center gap-1.5">
+          <div class="flex items-center gap-2">
+            <button id="btnTimerToggle" type="button" onclick="toggleTimer()" class="px-4 py-2.5 rounded-xl font-bold text-sm bg-emerald-600 hover:bg-emerald-500 text-white shadow-md shadow-emerald-950/50 transition flex items-center gap-1.5">
               <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z"/></svg>
               <span>Mulai</span>
             </button>
-            <button id="btnCommitSession" onclick="commitCurrentTimerSession()" title="Catat durasi sesi berjalan ke log hari ini" class="hidden px-3 py-2.5 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-400/40 text-xs font-bold transition">
-              ✓ Catat Sesi
+            <button type="button" onclick="resetTimer()" title="Reset Timer" class="p-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-600 transition">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
             </button>
-            <button onclick="resetTimer()" title="Reset Timer" class="p-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-600 transition">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
-            </button>
-            <button onclick="openManualLogModal()" title="Tambah Menit Manual" class="px-3 py-2.5 rounded-xl bg-sky-600/20 hover:bg-sky-600/30 text-sky-300 border border-sky-500/40 text-xs font-semibold transition">
+            <button type="button" onclick="openManualLogModal()" class="px-3 py-2.5 rounded-xl bg-sky-950/80 hover:bg-sky-900 text-sky-300 border border-sky-700/60 text-xs font-bold transition whitespace-nowrap">
               + Menit
             </button>
           </div>
         </div>
       </div>
 
-      <!-- QUICK STATS BAR -->
+      <!-- 4 KPI Summary Cards inside Header -->
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5 mt-5">
-        <!-- Stat 1: Today's Status -->
-        <div class="bg-white/10 backdrop-blur border border-white/10 rounded-xl p-3.5 flex items-center justify-between">
-          <div>
-            <p class="text-xs text-slate-300 font-medium">Status Belajar Hari Ini</p>
-            <p id="todayDateLabel" class="text-[11px] text-slate-400 mb-1">Rabu, 18 Nov 2026</p>
-            <div id="todayStatusBadge" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold bg-amber-500/20 text-amber-300 border border-amber-400/30">
-              Belum Belajar
+        <!-- Card 1: Status Belajar Hari Ini -->
+        <div class="bg-navy-950/60 border border-slate-700/70 rounded-2xl p-4 flex flex-col justify-between gap-2.5">
+          <div class="flex items-start justify-between gap-2">
+            <div>
+              <p class="text-xs font-semibold text-slate-300">Status Belajar Hari Ini</p>
+              <p id="todayDateLabel" class="text-[11px] text-slate-400 mt-0.5">Kamis, 19 Nov 2026</p>
             </div>
+            <button id="btnCheckInToday" type="button" onclick="toggleTodayCheckIn()" class="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold shadow transition shrink-0">
+              Check-In ✓
+            </button>
           </div>
-          <button id="btnCheckInToday" onclick="toggleTodayCheckIn()" class="px-3 py-2 rounded-xl text-xs font-bold bg-emerald-500 hover:bg-emerald-400 text-navy-950 transition shadow">
-            Check-In ✓
-          </button>
+          <div>
+            <span id="todayStatusBadge" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold bg-amber-500/20 text-amber-300 border border-amber-400/30">
+              Belum Belajar
+            </span>
+          </div>
         </div>
 
-        <!-- Stat 2: Study Minutes Today vs Target -->
-        <div class="bg-white/10 backdrop-blur border border-white/10 rounded-xl p-3.5">
-          <div class="flex justify-between items-center mb-1">
-            <p class="text-xs text-slate-300 font-medium">Durasi Hari Ini vs Target</p>
-            <span id="todayDayTypeBadge" class="text-[10px] font-bold px-2 py-0.5 rounded bg-slate-700 text-slate-200">Target 30m</span>
+        <!-- Card 2: Durasi Hari Ini vs Target -->
+        <div class="bg-navy-950/60 border border-slate-700/70 rounded-2xl p-4 flex flex-col justify-between gap-2.5">
+          <div class="flex items-center justify-between gap-2">
+            <p class="text-xs font-semibold text-slate-300">Durasi Hari Ini vs Target</p>
+            <span id="todayDayTypeBadge" class="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-500/30 text-emerald-200">Target 30m</span>
           </div>
           <div class="flex items-baseline gap-1.5">
             <span id="todayMinutesText" class="text-2xl font-extrabold text-white">0</span>
-            <span id="todayTargetText" class="text-xs text-slate-300">/ 30 menit</span>
+            <span id="todayTargetText" class="text-xs text-slate-400">/ 30 menit</span>
           </div>
-          <div class="w-full bg-slate-700/80 rounded-full h-2 mt-2 overflow-hidden">
-            <div id="todayProgressBar" class="bg-emerald-400 h-2 rounded-full transition-all duration-500" style="width: 0%"></div>
+          <div class="w-full bg-slate-800 rounded-full h-1.5 overflow-hidden">
+            <div id="todayProgressBar" class="bg-emerald-400 h-1.5 rounded-full transition-all duration-300" style="width: 0%"></div>
           </div>
         </div>
 
-        <!-- Stat 3: Total Themes Mastered -->
-        <div class="bg-white/10 backdrop-blur border border-white/10 rounded-xl p-3.5">
-          <div class="flex justify-between items-center mb-1">
-            <p class="text-xs text-slate-300 font-medium">Total Tema Dikuasai</p>
-            <span id="masteryPercentText" class="text-xs font-bold text-emerald-300">0%</span>
+        <!-- Card 3: Total Tema Dikuasai -->
+        <div class="bg-navy-950/60 border border-slate-700/70 rounded-2xl p-4 flex flex-col justify-between gap-2.5">
+          <div class="flex items-center justify-between gap-2">
+            <p class="text-xs font-semibold text-slate-300">Total Tema Dikuasai</p>
+            <span id="masteryPercentText" class="text-xs font-extrabold text-emerald-400">0%</span>
           </div>
           <div class="flex items-baseline gap-1.5">
             <span id="masteredCountText" class="text-2xl font-extrabold text-white">0</span>
-            <span id="totalThemesCountText" class="text-xs text-slate-300">/ 26 modul (Fase 1–3)</span>
+            <span id="totalThemesCountText" class="text-xs text-slate-400">/ 26 modul (Fase 1–3)</span>
           </div>
-          <div class="w-full bg-slate-700/80 rounded-full h-2 mt-2 overflow-hidden">
-            <div id="masteryProgressBar" class="bg-sky-400 h-2 rounded-full transition-all duration-500" style="width: 0%"></div>
+          <div class="w-full bg-slate-800 rounded-full h-1.5 overflow-hidden">
+            <div id="masteryProgressBar" class="bg-sky-400 h-1.5 rounded-full transition-all duration-300" style="width: 0%"></div>
           </div>
         </div>
 
-        <!-- Stat 4: Daily Streak -->
-        <div class="bg-white/10 backdrop-blur border border-white/10 rounded-xl p-3.5 flex items-center justify-between">
-          <div>
-            <p class="text-xs text-slate-300 font-medium">Streak Konsistensi</p>
-            <div class="flex items-baseline gap-1.5 mt-1">
-              <span id="streakCountText" class="text-2xl font-extrabold text-amber-300">0</span>
-              <span class="text-xs text-slate-300">hari berturut</span>
+        <!-- Card 4: Streak Konsistensi -->
+        <div class="bg-navy-950/60 border border-slate-700/70 rounded-2xl p-4 flex items-center justify-between gap-3">
+          <div class="space-y-1">
+            <p class="text-xs font-semibold text-slate-300">Streak Konsistensi</p>
+            <div class="flex items-baseline gap-1.5">
+              <span id="streakCountText" class="text-2xl font-extrabold text-amber-400">0</span>
+              <span class="text-xs text-slate-300 font-semibold">hari berturut</span>
             </div>
-            <p class="text-[11px] text-slate-400 mt-0.5">Minggu Off tidak memutus streak</p>
+            <p class="text-[11px] text-slate-400">Minggu Off tidak memutus streak</p>
           </div>
-          <div class="w-11 h-11 rounded-2xl bg-amber-500/20 border border-amber-400/30 flex items-center justify-center text-2xl">
+          <div class="w-11 h-11 rounded-2xl bg-amber-500/20 border border-amber-400/30 flex items-center justify-center text-2xl shrink-0">
             🔥
           </div>
         </div>
@@ -455,187 +494,158 @@
     </div>
   </header>
 
-  <!-- NAVIGATION TABS -->
-  <nav id="mainStickyNav" class="bg-white border-b border-slate-200 relative z-30 shadow-sm">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="flex overflow-x-auto no-scrollbar gap-1 sm:gap-2 py-2" role="tablist">
-        <button onclick="switchTab('tracker')" id="tab-btn-tracker" class="tab-btn active-tab whitespace-nowrap px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-2 transition">
-          <span>📅</span> Jadwal & Mastery Tracker
-        </button>
-        <button onclick="switchTab('errorlog')" id="tab-btn-errorlog" class="tab-btn whitespace-nowrap px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold text-slate-600 hover:bg-slate-100 flex items-center gap-2 transition">
-          <span>🎯</span> Tabel Error Log & Weakspot
-          <span id="badgeErrorCount" class="px-1.5 py-0.5 text-[10px] rounded-full bg-rose-100 text-rose-700 font-bold">0</span>
-        </button>
-        <button onclick="switchTab('flashcards')" id="tab-btn-flashcards" class="tab-btn whitespace-nowrap px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold text-slate-600 hover:bg-slate-100 flex items-center gap-2 transition">
-          <span>🗂️</span> Flashcard Materi Kunci
-          <span id="badgeFlashcardCount" class="px-1.5 py-0.5 text-[10px] rounded-full bg-emerald-100 text-emerald-700 font-bold">0</span>
-        </button>
-        <button onclick="switchTab('sync')" id="tab-btn-sync" class="tab-btn whitespace-nowrap px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold text-slate-600 hover:bg-slate-100 flex items-center gap-2 transition">
-          <span>💾</span> Save / Load Progress
-        </button>
-      </div>
+  <!-- STICKY NAVIGATION TABS -->
+  <nav id="mainStickyNav" class="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200 shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2.5 flex items-center gap-2 overflow-x-auto no-scrollbar">
+      <button type="button" id="tab-btn-tracker" onclick="switchTab('tracker')" class="tab-btn active-tab whitespace-nowrap px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold bg-navy-900 text-white shadow-sm flex items-center gap-2 transition">
+        <span>📅</span>
+        <span>Jadwal & Mastery Tracker</span>
+      </button>
+      <button type="button" id="tab-btn-errorlog" onclick="switchTab('errorlog')" class="tab-btn whitespace-nowrap px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold text-slate-600 hover:bg-slate-100 flex items-center gap-2 transition">
+        <span>🎯</span>
+        <span>Error Log & Weakspot</span>
+        <span id="badgeErrorCount" class="px-2 py-0.5 text-[11px] rounded-full bg-rose-100 text-rose-700 font-extrabold">0</span>
+      </button>
+      <button type="button" id="tab-btn-flashcards" onclick="switchTab('flashcards')" class="tab-btn whitespace-nowrap px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold text-slate-600 hover:bg-slate-100 flex items-center gap-2 transition">
+        <span>🗂️</span>
+        <span>Flashcard Materi Kunci</span>
+        <span id="badgeFlashcardCount" class="px-2 py-0.5 text-[11px] rounded-full bg-sky-100 text-sky-700 font-extrabold">0</span>
+      </button>
+      <button type="button" id="tab-btn-sync" onclick="switchTab('sync')" class="tab-btn whitespace-nowrap px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold text-slate-600 hover:bg-slate-100 flex items-center gap-2 transition">
+        <span>💾</span>
+        <span>Save / Load Progress</span>
+      </button>
     </div>
   </nav>
 
   <!-- MAIN CONTENT CONTAINER -->
-  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
 
     <!-- ===================================================================== -->
     <!-- TAB 1: JADWAL & MASTERY TRACKER                                       -->
     <!-- ===================================================================== -->
     <section id="tab-tracker" class="tab-panel space-y-6">
-      <!-- KALENDER BELAJAR AKTIF INTERAKTIF (MONTHLY STREAK CALENDAR) -->
-      <div class="bg-white rounded-2xl border border-slate-200 p-4 sm:p-5 shadow-sm">
-        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-slate-100">
+      <!-- Interactive Study Calendar Card -->
+      <div class="bg-white rounded-2xl border border-slate-200 p-4 sm:p-6 shadow-sm space-y-4">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
-            <div class="flex items-center gap-2">
-              <span class="w-2.5 h-6 rounded-full bg-emerald-600 inline-block"></span>
-              <h2 class="text-base sm:text-lg font-extrabold text-navy-900">
-                Kalender Belajar Aktif & Visualisasi Streak
-              </h2>
-            </div>
-            <p class="text-xs sm:text-sm text-slate-600 mt-1">
-              Klik tanggal mana saja untuk menandai kehadiran belajar (✓). Target harian mengikuti durasi timer aktif (<strong id="calActiveTargetText">30 menit</strong>), <strong>Minggu Off</strong> tidak memutus streak.
-            </p>
+            <h2 class="text-base sm:text-lg font-extrabold text-navy-900">Kalender Belajar Aktif</h2>
+            <p class="text-xs text-slate-500">Klik tanggal untuk menandai kehadiran • Target harian aktif: <strong id="calActiveTargetText" class="text-navy-900">30 menit</strong></p>
           </div>
-
-          <!-- Month Navigation & Monthly Summary -->
-          <div class="flex flex-wrap items-center gap-2 sm:gap-3">
-            <div class="px-3 py-1.5 rounded-xl bg-emerald-50 border border-emerald-200 text-xs font-bold text-emerald-800">
-              Bulan Ini: <span id="calMonthActiveCount">0</span> Hari Aktif
+          <div class="flex flex-wrap items-center gap-2">
+            <span class="px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-bold">
+              ✓ <span id="calMonthActiveCount">0</span> Hari Aktif Bulan Ini
+            </span>
+            <div class="inline-flex items-center gap-1 bg-slate-100 p-1 rounded-xl border border-slate-200">
+              <button type="button" onclick="changeCalendarMonth(-1)" class="px-2.5 py-1 rounded-lg hover:bg-white text-xs font-bold text-slate-700 transition">←</button>
+              <span id="calMonthYearTitle" class="px-2 text-xs font-extrabold text-navy-900 min-w-[115px] text-center">November 2026</span>
+              <button type="button" onclick="changeCalendarMonth(1)" class="px-2.5 py-1 rounded-lg hover:bg-white text-xs font-bold text-slate-700 transition">→</button>
             </div>
-            <div class="flex items-center bg-slate-100 rounded-xl p-1 border border-slate-200">
-              <button onclick="changeCalendarMonth(-1)" title="Bulan Sebelumnya" class="p-1.5 rounded-lg hover:bg-white text-slate-700 font-bold text-xs transition">
-                ◀
-              </button>
-              <span id="calMonthYearTitle" class="px-2 sm:px-3 text-xs sm:text-sm font-extrabold text-navy-900 min-w-[112px] sm:min-w-[130px] text-center">
-                November 2026
-              </span>
-              <button onclick="changeCalendarMonth(1)" title="Bulan Berikutnya" class="p-1.5 rounded-lg hover:bg-white text-slate-700 font-bold text-xs transition">
-                ▶
-              </button>
-            </div>
-            <button onclick="jumpCalendarToToday()" class="px-3 py-2 rounded-xl bg-navy-900 hover:bg-navy-800 text-white text-xs font-bold transition">
+            <button type="button" onclick="jumpCalendarToToday()" class="px-3 py-1.5 rounded-xl bg-navy-900 hover:bg-navy-800 text-white text-xs font-bold transition">
               Hari Ini
             </button>
           </div>
         </div>
 
-        <!-- Calendar Weekday Headers (Senin - Minggu) -->
-        <div class="grid grid-cols-7 gap-1 sm:gap-2 mt-4 text-center text-[10px] sm:text-[11px] font-extrabold uppercase tracking-tight sm:tracking-wider text-slate-500">
-          <div class="py-1">Sen</div>
-          <div class="py-1">Sel</div>
-          <div class="py-1">Rab</div>
-          <div class="py-1">Kam</div>
-          <div class="py-1">Jum</div>
-          <div class="py-1 text-sky-700">Sab<span class="hidden sm:inline"> (60m)</span></div>
-          <div class="py-1 text-rose-600">Min<span class="hidden sm:inline"> (Off)</span></div>
+        <!-- Day Headers -->
+        <div class="grid grid-cols-7 gap-1.5 sm:gap-2 text-center text-[11px] font-extrabold text-slate-500">
+          <div>SEN</div>
+          <div>SEL</div>
+          <div>RAB</div>
+          <div>KAM</div>
+          <div>JUM</div>
+          <div class="text-sky-600">SAB</div>
+          <div class="text-rose-500">MIN</div>
         </div>
 
-        <!-- Interactive Calendar Days Grid (Uniform Precision Cells) -->
-        <div id="interactiveCalendarGrid" class="grid grid-cols-7 auto-rows-fr gap-1.5 sm:gap-2 mt-1.5">
-          <!-- Populated dynamically by JS -->
-        </div>
-
-        <!-- Legend & Streak Heatmap Bar -->
-        <div class="flex flex-wrap items-center justify-between gap-3 mt-4 pt-3 border-t border-slate-100 text-[11px] text-slate-600">
-          <div class="flex flex-wrap items-center gap-3">
-            <span class="inline-flex items-center gap-1.5">
-              <span class="w-3.5 h-3.5 rounded bg-emerald-500 text-white text-[9px] font-extrabold inline-flex items-center justify-center">✓</span> Selesai Belajar
-            </span>
-            <span class="inline-flex items-center gap-1.5">
-              <span class="w-2.5 h-2.5 rounded-full bg-amber-400 inline-block"></span> Timer Berjalan
-            </span>
-            <span class="inline-flex items-center gap-1.5">
-              <span class="w-2.5 h-2.5 rounded-full bg-navy-900 inline-block"></span> Belum Belajar
-            </span>
-            <span class="inline-flex items-center gap-1.5">
-              <span class="w-3.5 h-3.5 rounded bg-rose-50 border border-rose-200 inline-block"></span> Minggu Off
-            </span>
-          </div>
-          <span class="font-semibold text-navy-800">💡 Klik kotak tanggal untuk ceklis / batalkan kehadiran harian</span>
+        <!-- Calendar Dates Grid -->
+        <div id="interactiveCalendarGrid" class="grid grid-cols-7 gap-1.5 sm:gap-2">
+          <!-- Populated dynamically -->
         </div>
       </div>
 
-      <!-- Filter Controls (3 Fase Utama: TWK - TIU - TKP) -->
-      <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-3 bg-white p-3.5 rounded-2xl border border-slate-200 shadow-sm">
-        <div class="flex flex-wrap items-center gap-1.5 sm:gap-2">
-          <span class="text-xs font-bold text-slate-500 uppercase tracking-wider mr-1">Fase:</span>
-          <button onclick="setTrackerFilter('phase', 'ALL')" id="filter-phase-ALL" class="filter-phase-btn px-3 py-1.5 rounded-lg text-xs font-bold bg-navy-900 text-white transition">
+      <!-- Filter Bar for 3 Phases -->
+      <div class="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-3">
+        <div class="flex flex-wrap items-center gap-1.5">
+          <button type="button" id="filter-phase-ALL" onclick="setTrackerFilter('phase', 'ALL')" class="filter-phase-btn px-3 py-1.5 rounded-lg text-xs font-bold bg-navy-900 text-white transition">
             Semua Fase (26)
           </button>
-          <button onclick="setTrackerFilter('phase', 'FASE1_TWK')" id="filter-phase-FASE1_TWK" class="filter-phase-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200 transition">
-            Fase 1: TWK (8 Tema)
+          <button type="button" id="filter-phase-FASE1_TWK" onclick="setTrackerFilter('phase', 'FASE1_TWK')" class="filter-phase-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200 transition">
+            Fase 1: TWK (8)
           </button>
-          <button onclick="setTrackerFilter('phase', 'FASE2_TIU')" id="filter-phase-FASE2_TIU" class="filter-phase-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200 transition">
-            Fase 2: TIU (11 Tema)
+          <button type="button" id="filter-phase-FASE2_TIU" onclick="setTrackerFilter('phase', 'FASE2_TIU')" class="filter-phase-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200 transition">
+            Fase 2: TIU (11)
           </button>
-          <button onclick="setTrackerFilter('phase', 'FASE3_TKP')" id="filter-phase-FASE3_TKP" class="filter-phase-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200 transition">
-            Fase 3: TKP (6 Tema + TO)
+          <button type="button" id="filter-phase-FASE3_TKP" onclick="setTrackerFilter('phase', 'FASE3_TKP')" class="filter-phase-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200 transition">
+            Fase 3: TKP & TO (7)
           </button>
         </div>
 
-        <div class="flex flex-wrap items-center gap-2">
-          <span class="text-xs font-bold text-slate-500 uppercase tracking-wider mr-1">Status:</span>
-          <select id="filterStatusSelect" onchange="setTrackerFilter('status', this.value)" class="text-xs font-semibold bg-slate-100 border border-slate-200 rounded-lg px-3 py-1.5 text-slate-700 focus:outline-none focus:border-emerald-500">
+        <div class="flex items-center gap-2">
+          <label for="trackerStatusSelect" class="text-xs font-bold text-slate-600">Status:</label>
+          <select id="trackerStatusSelect" onchange="setTrackerFilter('status', this.value)" class="px-3 py-1.5 rounded-xl border border-slate-300 bg-white text-xs font-bold text-navy-900 focus:outline-none">
             <option value="ALL">Semua Status</option>
-            <option value="IN_PROGRESS">Sedang Dipelajari</option>
             <option value="NOT_STARTED">Belum Mulai</option>
-            <option value="MASTERED">Sudah Dikuasai ✓</option>
+            <option value="IN_PROGRESS">Sedang Dipelajari</option>
+            <option value="MASTERED">Mastered ✓</option>
           </select>
         </div>
       </div>
 
       <!-- Modules List Container -->
-      <div id="modulesContainer" class="space-y-4"></div>
+      <div id="modulesContainer" class="space-y-4">
+        <!-- Populated dynamically -->
+      </div>
     </section>
 
     <!-- ===================================================================== -->
     <!-- TAB 2: ERROR LOG & WEAKSPOT TRACKER                                   -->
     <!-- ===================================================================== -->
     <section id="tab-errorlog" class="tab-panel hidden space-y-5">
-      <div class="bg-white rounded-2xl border border-slate-200 p-4 sm:p-5 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h2 class="text-base sm:text-lg font-extrabold text-navy-900">Tabel Error Log & Evaluasi Weakspot</h2>
-          <p class="text-xs sm:text-sm text-slate-600">Catat setiap pola soal yang salah atau menjebak, lalu ulangi hingga status berubah menjadi <strong>Sudah Dikuasai</strong>.</p>
+      <div class="bg-white rounded-2xl border border-slate-200 p-4 sm:p-6 shadow-sm space-y-4">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div>
+            <h2 class="text-base sm:text-lg font-extrabold text-navy-900">Error Log & Weakspot Tracker</h2>
+            <p class="text-xs text-slate-500">Catat pola soal yang sering keliru agar tidak mengulangi kesalahan yang sama saat CAT.</p>
+          </div>
+          <button type="button" onclick="openErrorModal()" class="px-4 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs sm:text-sm font-bold shadow transition self-start sm:self-auto">
+            + Catat Weakspot Baru
+          </button>
         </div>
-        <button onclick="openErrorModal()" class="px-4 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs sm:text-sm font-bold shadow transition shrink-0">
-          + Catat Weakspot Baru
-        </button>
-      </div>
 
-      <!-- Filter Bar for Error Log -->
-      <div class="flex flex-wrap items-center gap-2 bg-white p-3 rounded-xl border border-slate-200">
-        <input type="text" id="errorSearchInput" oninput="renderErrorLogTable()" placeholder="Cari tema, konsep salah, atau solusi..." class="flex-1 min-w-[200px] text-xs sm:text-sm px-3 py-2 rounded-lg border border-slate-200 focus:outline-none focus:border-emerald-500" />
-        <select id="errorCatFilter" onchange="renderErrorLogTable()" class="text-xs font-semibold bg-slate-100 border border-slate-200 rounded-lg px-3 py-2">
-          <option value="ALL">Semua Fase</option>
-          <option value="TWK">Fase 1: TWK</option>
-          <option value="TIU">Fase 2: TIU</option>
-          <option value="TKP">Fase 3: TKP</option>
-        </select>
-        <select id="errorStatusFilter" onchange="renderErrorLogTable()" class="text-xs font-semibold bg-slate-100 border border-slate-200 rounded-lg px-3 py-2">
-          <option value="ALL">Semua Status</option>
-          <option value="Perlu Review">Perlu Review ⚠️</option>
-          <option value="Sudah Dikuasai">Sudah Dikuasai ✅</option>
-        </select>
-      </div>
+        <!-- Search & Filter Controls -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <input type="text" id="errorSearchInput" oninput="renderErrorLogTable()" placeholder="Cari tema, konsep, atau solusi..." class="px-3.5 py-2 rounded-xl border border-slate-300 text-xs sm:text-sm focus:outline-none focus:border-navy-800" />
+          <select id="errorCatFilter" onchange="renderErrorLogTable()" class="px-3.5 py-2 rounded-xl border border-slate-300 bg-white text-xs sm:text-sm font-semibold">
+            <option value="ALL">Semua Kategori (TWK / TIU / TKP)</option>
+            <option value="TWK">Fase 1: TWK</option>
+            <option value="TIU">Fase 2: TIU</option>
+            <option value="TKP">Fase 3: TKP</option>
+          </select>
+          <select id="errorStatusFilter" onchange="renderErrorLogTable()" class="px-3.5 py-2 rounded-xl border border-slate-300 bg-white text-xs sm:text-sm font-semibold">
+            <option value="ALL">Semua Status Penguasaan</option>
+            <option value="Perlu Review">Perlu Review ⚠️</option>
+            <option value="Sudah Dikuasai">Sudah Dikuasai ✅</option>
+          </select>
+        </div>
 
-      <!-- Responsive Table -->
-      <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-        <div class="overflow-x-auto">
-          <table class="w-full text-left border-collapse text-xs sm:text-sm">
+        <!-- Responsive Table -->
+        <div class="overflow-x-auto border border-slate-200 rounded-xl">
+          <table class="w-full text-left border-collapse">
             <thead>
-              <tr class="bg-navy-900 text-white text-[11px] uppercase tracking-wider">
-                <th class="p-3.5 font-bold">Tanggal</th>
-                <th class="p-3.5 font-bold">Fase & Materi</th>
-                <th class="p-3.5 font-bold">Konsep / Soal Salah</th>
-                <th class="p-3.5 font-bold">Penyebab</th>
-                <th class="p-3.5 font-bold">Solusi / Trik Perbaikan</th>
-                <th class="p-3.5 font-bold">Status</th>
-                <th class="p-3.5 font-bold text-center">Aksi</th>
+              <tr class="bg-slate-50 border-b border-slate-200 text-[11px] font-extrabold uppercase tracking-wider text-slate-600">
+                <th class="p-3.5">Tanggal</th>
+                <th class="p-3.5">Fase & Tema</th>
+                <th class="p-3.5">Konsep / Soal Salah</th>
+                <th class="p-3.5">Penyebab</th>
+                <th class="p-3.5">Solusi / Trik</th>
+                <th class="p-3.5">Status</th>
+                <th class="p-3.5 text-center">Aksi</th>
               </tr>
             </thead>
-            <tbody id="errorLogTableBody" class="divide-y divide-slate-200"></tbody>
+            <tbody id="errorLogTableBody" class="divide-y divide-slate-100">
+              <!-- Populated dynamically -->
+            </tbody>
           </table>
         </div>
       </div>
@@ -645,61 +655,63 @@
     <!-- TAB 3: FLASHCARD MATERI KUNCI                                         -->
     <!-- ===================================================================== -->
     <section id="tab-flashcards" class="tab-panel hidden space-y-5">
-      <div class="bg-white rounded-2xl border border-slate-200 p-4 sm:p-5 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h2 class="text-base sm:text-lg font-extrabold text-navy-900">Flashcard Materi Kunci & Hafalan Cepat</h2>
-          <p class="text-xs sm:text-sm text-slate-600">Klik kartu untuk membalik pertanyaan dan jawaban. Cocok untuk sesi belajar cepat di HP maupun laptop.</p>
-        </div>
-        <div class="flex flex-wrap items-center gap-2">
-          <select id="fcTopicFilter" onchange="filterFlashcards()" class="text-xs font-semibold bg-slate-100 border border-slate-200 rounded-xl px-3 py-2 max-w-[260px]">
-            <!-- Populated dynamically with optgroup FASE 1: TWK, FASE 2: TIU, FASE 3: TKP -->
-          </select>
-          <select id="fcMasteryFilter" onchange="filterFlashcards()" class="text-xs font-semibold bg-slate-100 border border-slate-200 rounded-xl px-3 py-2">
-            <option value="ALL">Semua Status</option>
-            <option value="REVIEW">Perlu Diulang</option>
-            <option value="MEMORIZED">Sudah Hafal ✓</option>
-          </select>
-          <button onclick="openAddFlashcardModal()" class="px-3.5 py-2 rounded-xl bg-navy-900 hover:bg-navy-800 text-white text-xs font-bold transition">
+      <div class="max-w-3xl mx-auto bg-white rounded-2xl border border-slate-200 p-4 sm:p-6 shadow-sm space-y-5">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div>
+            <h2 class="text-base sm:text-lg font-extrabold text-navy-900">Flashcard Materi Kunci (Spaced Repetition)</h2>
+            <p class="text-xs text-slate-500">Klik kartu untuk membalik dan menguji ingatan rumus maupun konsep cepat.</p>
+          </div>
+          <button type="button" onclick="openAddFlashcardModal()" class="px-4 py-2.5 rounded-xl bg-sky-600 hover:bg-sky-500 text-white text-xs sm:text-sm font-bold shadow transition self-start sm:self-auto">
             + Tambah Kartu
           </button>
         </div>
-      </div>
 
-      <!-- Flashcard Interactive Stage -->
-      <div class="max-w-2xl mx-auto space-y-4">
-        <div class="flex items-center justify-between gap-2 text-xs font-bold text-slate-500 px-1">
-          <span id="fcCounterText" class="shrink-0">0 Kartu</span>
-          <span id="fcTopicBadge" class="px-2.5 py-1 rounded-full bg-sky-100 text-sky-800 truncate max-w-[68%]">Semua Fase</span>
+        <!-- Flashcard Filters -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <select id="fcTopicFilter" onchange="filterFlashcards()" class="px-3.5 py-2 rounded-xl border border-slate-300 bg-white text-xs sm:text-sm font-semibold">
+            <option value="ALL">Semua Fase (0 Kartu)</option>
+          </select>
+          <select id="fcMasteryFilter" onchange="filterFlashcards()" class="px-3.5 py-2 rounded-xl border border-slate-300 bg-white text-xs sm:text-sm font-semibold">
+            <option value="ALL">Semua Status Hafalan</option>
+            <option value="REVIEW">Perlu Diulang 🔁</option>
+            <option value="MEMORIZED">Sudah Hafal ✅</option>
+          </select>
         </div>
 
-        <div onclick="flipFlashcard()" class="perspective-1000 cursor-pointer select-none h-72 sm:h-80 w-full">
-          <div id="flashcardInner" class="relative w-full h-full transform-style-3d">
-            <!-- FRONT SIDE -->
-            <div class="absolute inset-0 backface-hidden bg-white rounded-3xl border-2 border-slate-200 shadow-lg p-5 sm:p-8 flex flex-col justify-between">
-              <div class="flex justify-between items-center gap-2">
-                <span class="text-[10px] sm:text-[11px] font-extrabold uppercase tracking-wider text-slate-400">PERTANYAAN / KONSEP</span>
-                <span id="fcStatusTagFront" class="text-[10px] sm:text-[11px] font-bold px-2.5 py-1 rounded-lg bg-amber-100 text-amber-800 shrink-0">Perlu Diulang</span>
+        <!-- 3D Flip Card Container -->
+        <div class="perspective-1000">
+          <div id="flashcardInner" onclick="flipFlashcard()" class="transform-style-3d relative w-full min-h-[250px] sm:min-h-[280px] cursor-pointer select-none">
+            <!-- Front Face -->
+            <div class="backface-hidden absolute inset-0 rounded-2xl bg-gradient-to-br from-slate-50 to-slate-100 border-2 border-slate-200 p-5 sm:p-7 flex flex-col justify-between shadow-sm">
+              <div class="flex items-center justify-between gap-2">
+                <span id="fcTopicBadge" class="px-2.5 py-1 rounded-full bg-sky-100 text-sky-800 text-xs font-bold">Belum Ada Kartu</span>
+                <span id="fcStatusTagFront" class="text-[11px] font-bold px-2.5 py-1 rounded-lg bg-amber-100 text-amber-800">Perlu Diulang 🔁</span>
               </div>
-              <div class="my-auto text-center px-2 overflow-y-auto max-h-40">
-                <p id="fcFrontText" class="text-sm sm:text-xl font-extrabold text-navy-900 leading-snug break-words"></p>
+              <div class="my-auto py-4 text-center">
+                <p id="fcFrontText" class="text-base sm:text-xl font-extrabold text-navy-900 leading-relaxed">
+                  Belum ada flashcard. Klik tombol "+ Tambah Kartu" untuk membuat kartu ringkasan materi Anda.
+                </p>
               </div>
-              <div class="text-center">
-                <p id="fcHintText" class="text-xs text-slate-500 italic mb-2 line-clamp-2"></p>
-                <span class="inline-block text-[11px] font-semibold text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full">👆 Klik kartu untuk melihat jawaban</span>
+              <div class="flex items-center justify-between text-[11px] text-slate-400 font-semibold">
+                <span id="fcCounterText">0 Kartu</span>
+                <span>Klik kartu untuk melihat jawaban ↻</span>
               </div>
             </div>
 
-            <!-- BACK SIDE -->
-            <div class="absolute inset-0 backface-hidden rotate-y-180 bg-gradient-to-br from-navy-900 to-navy-800 text-white rounded-3xl border-2 border-emerald-500/50 shadow-xl p-5 sm:p-8 flex flex-col justify-between">
-              <div class="flex justify-between items-center gap-2">
-                <span class="text-[10px] sm:text-[11px] font-extrabold uppercase tracking-wider text-emerald-300">JAWABAN & KUNCI LOGIKA</span>
-                <span class="text-[10px] sm:text-[11px] text-slate-300 shrink-0">Klik untuk kembali</span>
+            <!-- Back Face -->
+            <div class="backface-hidden rotate-y-180 absolute inset-0 rounded-2xl bg-gradient-to-br from-navy-900 to-navy-800 text-white border-2 border-emerald-500/50 p-5 sm:p-7 flex flex-col justify-between shadow-lg">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-extrabold uppercase tracking-wider text-emerald-400">Jawaban & Pembahasan</span>
+                <span class="text-[11px] text-slate-300">Klik untuk kembali ↺</span>
               </div>
-              <div class="my-auto text-center px-2 overflow-y-auto max-h-44">
-                <p id="fcBackText" class="text-sm sm:text-lg font-semibold text-white leading-relaxed break-words"></p>
+              <div class="my-auto py-4 text-center space-y-2.5">
+                <p id="fcBackText" class="text-sm sm:text-lg font-bold text-white leading-relaxed">
+                  Tambahkan konsep penting atau rumus cepat ke dalam flashcard.
+                </p>
+                <p id="fcHintText" class="text-xs text-emerald-300 font-medium"></p>
               </div>
               <div class="text-center text-[11px] text-slate-400">
-                Tandai penguasaan Anda menggunakan tombol di bawah
+                Tandai penguasaan kartu di tombol bawah
               </div>
             </div>
           </div>
@@ -760,19 +772,26 @@
       <!-- JSON Backup / Restore Card -->
       <div class="max-w-2xl mx-auto bg-white rounded-2xl border border-slate-200 p-5 sm:p-6 shadow-sm space-y-5">
         <div>
-          <h2 class="text-lg font-extrabold text-navy-900">Save / Load Progress (.JSON)</h2>
-          <p class="text-xs sm:text-sm text-slate-600 mt-1">
+          <h2 id="syncSectionTitle" class="text-lg font-extrabold text-navy-900">Save / Load Progress (.JSON)</h2>
+          <p id="syncSectionSubtitle" class="text-xs sm:text-sm text-slate-600 mt-1">
             Cadangkan atau pulihkan seluruh progres belajar (judul kustom, checklist mastery, timer harian, error log, dan flashcard) menggunakan file JSON offline.
           </p>
         </div>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
-          <button onclick="exportDataJSON()" class="w-full py-3 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs sm:text-sm font-bold shadow transition flex items-center justify-center gap-2">
-            <span>⬇️ Save Progress (.JSON)</span>
+        <!-- Local Mode Action Buttons -->
+        <div id="syncTabLocalActions" class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+          <button onclick="openBackupRestoreModal()" class="sm:col-span-2 w-full py-3 px-4 rounded-xl bg-navy-900 hover:bg-navy-800 text-white text-xs sm:text-sm font-bold shadow transition flex items-center justify-center gap-2">
+            <span>💾 Save / Load Progress (.JSON)</span>
           </button>
+        </div>
 
-          <button onclick="openBackupRestoreModal()" class="w-full py-3 px-4 rounded-xl bg-navy-900 hover:bg-navy-800 text-white text-xs sm:text-sm font-bold shadow transition flex items-center justify-center gap-2">
-            <span>⬆️ Load Progress (.JSON)</span>
+        <!-- Cloud Mode Separated Action Buttons -->
+        <div id="syncTabCloudActions" class="hidden grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+          <button type="button" onclick="saveProgressToCloudManual()" class="w-full py-3 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs sm:text-sm font-bold shadow transition flex items-center justify-center gap-2">
+            <span>☁️ Save Progress (Cloud)</span>
+          </button>
+          <button type="button" onclick="loadProgressFromCloudManual()" class="w-full py-3 px-4 rounded-xl bg-sky-600 hover:bg-sky-500 text-white text-xs sm:text-sm font-bold shadow transition flex items-center justify-center gap-2">
+            <span>🔄 Load Progress (Cloud)</span>
           </button>
         </div>
 
@@ -789,6 +808,104 @@
   <!-- ===================================================================== -->
   <!-- MODALS (NO BROWSER ALERT/CONFIRM)                                     -->
   <!-- ===================================================================== -->
+
+  <!-- Modal Profile Settings (Photo/Icon <= 3MB, Username, Password, Recovery Code, Save/Load) -->
+  <div id="profileSettingsModal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-[65] hidden items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-lg w-full p-5 sm:p-6 shadow-2xl border border-slate-200 space-y-4 max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+        <div>
+          <h3 class="text-base sm:text-lg font-extrabold text-navy-900">Pengaturan Profil & Akun</h3>
+          <p id="profileModalAccountSubtitle" class="text-xs text-slate-500">Sesuaikan foto profil, username, keamanan, dan cadangan progres</p>
+        </div>
+        <button onclick="closeModal('profileSettingsModal')" class="text-slate-400 hover:text-slate-600 font-bold text-lg">✕</button>
+      </div>
+
+      <div id="profileModalAlert" class="hidden p-3 rounded-xl text-xs font-semibold"></div>
+
+      <!-- 1. Avatar & Photo Upload (Max 3MB) -->
+      <div class="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-3">
+        <div class="flex items-center gap-4">
+          <div class="w-16 h-16 rounded-2xl bg-navy-900 text-white border-2 border-emerald-500 flex items-center justify-center overflow-hidden shrink-0 shadow">
+            <img id="modalProfilePreviewImg" src="" alt="Preview Profil" class="hidden w-full h-full object-cover" />
+            <span id="modalProfilePreviewIcon" class="text-3xl">🧑‍🎓</span>
+          </div>
+          <div class="space-y-1.5 flex-1 min-w-0">
+            <p class="text-xs font-extrabold text-navy-900">Foto Profil atau Ikon Avatar</p>
+            <p class="text-[11px] text-slate-500">Pilih ikon cepat di bawah atau unggah foto (Maks. <strong>3 MB</strong>).</p>
+            <div class="flex flex-wrap items-center gap-2 pt-0.5">
+              <label class="px-3 py-1.5 rounded-lg bg-navy-900 hover:bg-navy-800 text-white text-xs font-bold cursor-pointer transition">
+                <span>📷 Upload Foto</span>
+                <input type="file" id="profilePhotoFileInput" accept="image/*" onchange="handleProfilePhotoUpload(event)" class="hidden" />
+              </label>
+              <button type="button" onclick="resetProfilePhotoToDefaultIcon()" class="px-2.5 py-1.5 rounded-lg bg-white hover:bg-slate-100 text-slate-700 border border-slate-300 text-xs font-semibold transition">
+                Reset Ikon
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Preset Icons Picker -->
+        <div>
+          <p class="text-[11px] font-bold text-slate-600 mb-1.5">Atau pilih ikon avatar:</p>
+          <div class="grid grid-cols-8 gap-1.5">
+            <button type="button" onclick="selectPresetProfileIcon('🧑‍🎓')" class="p-1.5 rounded-lg bg-white hover:bg-emerald-50 border border-slate-200 text-lg text-center transition">🧑‍🎓</button>
+            <button type="button" onclick="selectPresetProfileIcon('👨‍💼')" class="p-1.5 rounded-lg bg-white hover:bg-emerald-50 border border-slate-200 text-lg text-center transition">👨‍💼</button>
+            <button type="button" onclick="selectPresetProfileIcon('👩‍💼')" class="p-1.5 rounded-lg bg-white hover:bg-emerald-50 border border-slate-200 text-lg text-center transition">👩‍💼</button>
+            <button type="button" onclick="selectPresetProfileIcon('🦅')" class="p-1.5 rounded-lg bg-white hover:bg-emerald-50 border border-slate-200 text-lg text-center transition">🦅</button>
+            <button type="button" onclick="selectPresetProfileIcon('🏛️')" class="p-1.5 rounded-lg bg-white hover:bg-emerald-50 border border-slate-200 text-lg text-center transition">🏛️</button>
+            <button type="button" onclick="selectPresetProfileIcon('🎯')" class="p-1.5 rounded-lg bg-white hover:bg-emerald-50 border border-slate-200 text-lg text-center transition">🎯</button>
+            <button type="button" onclick="selectPresetProfileIcon('🔥')" class="p-1.5 rounded-lg bg-white hover:bg-emerald-50 border border-slate-200 text-lg text-center transition">🔥</button>
+            <button type="button" onclick="selectPresetProfileIcon('🍳')" class="p-1.5 rounded-lg bg-white hover:bg-emerald-50 border border-slate-200 text-lg text-center transition">🍳</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2. Account Credentials Form (Username, Password, Recovery Code - Cloud Account Only) -->
+      <form id="profileCredentialsForm" onsubmit="saveProfileCredentials(event)" class="hidden space-y-3 text-xs sm:text-sm">
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">Username</label>
+          <input type="text" id="profEditUsername" required minlength="3" pattern="[a-zA-Z0-9_.-]+" placeholder="Username Anda" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-slate-900 focus:outline-none focus:border-indigo-600" />
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">Password Baru <span class="text-slate-400 font-normal">(Opsional)</span></label>
+            <input type="password" id="profEditPassword" minlength="6" placeholder="Kosongkan jika tetap" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-slate-900 focus:outline-none focus:border-indigo-600" />
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">Kode Pemulihan Baru <span class="text-slate-400 font-normal">(Opsional)</span></label>
+            <input type="text" id="profEditRecoveryCode" minlength="4" placeholder="Contoh: EL SAWITE" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-slate-900 focus:outline-none focus:border-indigo-600" />
+          </div>
+        </div>
+
+        <button type="submit" id="btnSaveProfileChanges" class="w-full py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs sm:text-sm font-bold shadow transition">
+          Simpan Perubahan Profil & Keamanan
+        </button>
+      </form>
+
+      <!-- 3. Save & Load Progress Controls inside Profile Modal -->
+      <div class="pt-3 border-t border-slate-200 space-y-2">
+        <p class="text-xs font-extrabold text-navy-900">Cadangan & Sinkronisasi Progres</p>
+
+        <!-- Local Mode: Combined Button -->
+        <div id="profileModalLocalSaveLoad">
+          <button type="button" onclick="closeModal('profileSettingsModal'); openBackupRestoreModal();" class="w-full py-2.5 px-4 rounded-xl bg-navy-900 hover:bg-navy-800 text-white text-xs font-bold shadow transition flex items-center justify-center gap-2">
+            <span>💾 Save / Load Progress (.JSON)</span>
+          </button>
+        </div>
+
+        <!-- Cloud Mode: Separate Save & Load Buttons -->
+        <div id="profileModalCloudSaveLoad" class="hidden grid-cols-2 gap-2">
+          <button type="button" onclick="saveProgressToCloudManual()" class="w-full py-2.5 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold shadow transition flex items-center justify-center gap-1.5">
+            <span>☁️ Save Progress</span>
+          </button>
+          <button type="button" onclick="loadProgressFromCloudManual()" class="w-full py-2.5 px-3 rounded-xl bg-sky-600 hover:bg-sky-500 text-white text-xs font-bold shadow transition flex items-center justify-center gap-1.5">
+            <span>🔄 Load Progress</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <!-- Modal 0: Firebase Config Setup Modal -->
   <div id="firebaseConfigModal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-[70] hidden items-center justify-center p-4">
@@ -1067,6 +1184,7 @@
       signOut,
       onAuthStateChanged,
       updatePassword,
+      updateEmail,
       sendPasswordResetEmail
     } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
     import {
@@ -1074,6 +1192,7 @@
       doc,
       getDoc,
       setDoc,
+      deleteDoc,
       onSnapshot
     } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
@@ -1191,19 +1310,82 @@
       const btnLogout = document.getElementById('btnHeaderLogout');
       const syncSummary = document.getElementById('syncAccountSummary');
 
+      // Header Save/Load toggle (Separated for Cloud, Combined for Local)
+      const btnHeaderCombined = document.getElementById('btnHeaderCombinedSaveLoad');
+      const headerCloudGroup = document.getElementById('headerCloudSaveLoadGroup');
+
+      // Sync Tab Save/Load toggle
+      const syncTitle = document.getElementById('syncSectionTitle');
+      const syncSub = document.getElementById('syncSectionSubtitle');
+      const syncLocalActions = document.getElementById('syncTabLocalActions');
+      const syncCloudActions = document.getElementById('syncTabCloudActions');
+
+      // Profile Modal Save/Load toggle
+      const profLocalSL = document.getElementById('profileModalLocalSaveLoad');
+      const profCloudSL = document.getElementById('profileModalCloudSaveLoad');
+
       if (user) {
         const displayUsername = user.email ? user.email.split('@')[0] : user.uid.slice(0, 8);
         if (badgeDot) badgeDot.className = 'w-2 h-2 rounded-full bg-emerald-400 animate-pulse';
         if (badgeName) badgeName.textContent = `@${displayUsername}`;
-        if (btnLogout) btnLogout.classList.remove('hidden');
-        if (syncSummary) syncSummary.textContent = `Akun aktif: @${displayUsername} • Sinkronisasi lintas perangkat aktif.`;
+        if (btnLogout) {
+          btnLogout.textContent = 'Log Out';
+          btnLogout.classList.remove('hidden');
+        }
+        if (syncSummary) syncSummary.textContent = `Akun aktif: @${displayUsername} • Save & Load Cloud aktif.`;
+
+        // Show separate Save & Load Progress buttons for Cloud Account
+        if (btnHeaderCombined) btnHeaderCombined.classList.add('hidden');
+        if (headerCloudGroup) {
+          headerCloudGroup.classList.remove('hidden');
+          headerCloudGroup.classList.add('inline-flex');
+        }
+        if (syncTitle) syncTitle.textContent = 'Save / Load Progress Cloud';
+        if (syncSub) syncSub.textContent = 'Simpan cadangan progres terkini ke Cloud atau muat ulang progres tersimpan dari akun Cloud Anda.';
+        if (syncLocalActions) syncLocalActions.classList.add('hidden');
+        if (syncCloudActions) {
+          syncCloudActions.classList.remove('hidden');
+          syncCloudActions.classList.add('grid');
+        }
+        if (profLocalSL) profLocalSL.classList.add('hidden');
+        if (profCloudSL) {
+          profCloudSL.classList.remove('hidden');
+          profCloudSL.classList.add('grid');
+        }
       } else {
+        const localName = window.getLocalProfileUsername ? window.getLocalProfileUsername() : 'Mode Lokal';
         if (badgeDot) badgeDot.className = 'w-2 h-2 rounded-full bg-amber-400';
-        if (badgeName) badgeName.textContent = 'Mode Lokal';
-        if (btnLogout) btnLogout.classList.add('hidden');
-        if (syncSummary) syncSummary.textContent = 'Status: Mode Lokal (Belum login ke akun Cloud).';
+        if (badgeName) badgeName.textContent = localName ? `@${localName} (Lokal)` : 'Mode Lokal';
+        if (btnLogout) {
+          btnLogout.textContent = 'Log Out';
+          btnLogout.classList.remove('hidden');
+        }
+        if (syncSummary) syncSummary.textContent = 'Status: Mode Lokal (Login dengan akun Cloud untuk Save/Load Cloud).';
+
+        // Show combined Save / Load Progress button for Local Mode
+        if (btnHeaderCombined) btnHeaderCombined.classList.remove('hidden');
+        if (headerCloudGroup) {
+          headerCloudGroup.classList.add('hidden');
+          headerCloudGroup.classList.remove('inline-flex');
+        }
+        if (syncTitle) syncTitle.textContent = 'Save / Load Progress (.JSON)';
+        if (syncSub) syncSub.textContent = 'Cadangkan atau pulihkan seluruh progres belajar (judul kustom, checklist mastery, timer harian, error log, dan flashcard) menggunakan file JSON offline.';
+        if (syncLocalActions) syncLocalActions.classList.remove('hidden');
+        if (syncCloudActions) {
+          syncCloudActions.classList.add('hidden');
+          syncCloudActions.classList.remove('grid');
+        }
+        if (profLocalSL) profLocalSL.classList.remove('hidden');
+        if (profCloudSL) {
+          profCloudSL.classList.add('hidden');
+          profCloudSL.classList.remove('grid');
+        }
       }
     }
+
+    window.refreshAccountModeUI = function() {
+      updateHeaderCloudBadge(currentFbUser);
+    };
 
     async function initFirebaseSystem() {
       setConnectionStatus('connecting');
@@ -1293,6 +1475,134 @@
 
     window.onLocalStateSaved = function() {
       pushLocalStateToCloud();
+    };
+
+    // Explicit Cloud Save & Load Progress Actions for Logged-in Cloud Users
+    window.saveProgressToCloudManual = async function() {
+      if (!fbDb || !currentFbUser) {
+        window.showToast('Silakan login dengan akun Cloud terlebih dahulu.', '⚠️');
+        return;
+      }
+      try {
+        setConnectionStatus('connecting');
+        const userDocRef = doc(fbDb, 'users', currentFbUser.uid);
+        const stateSnapshot = window.getCurrentAppState();
+        await setDoc(userDocRef, {
+          username: currentFbUser.email ? currentFbUser.email.split('@')[0] : currentFbUser.uid,
+          updatedAt: new Date().toISOString(),
+          appState: stateSnapshot
+        }, { merge: true });
+        setConnectionStatus('connected');
+        window.showToast('Progress berhasil disimpan ke Cloud!', '☁️');
+      } catch (err) {
+        setConnectionStatus('disconnected');
+        window.showToast(`Gagal menyimpan ke Cloud: ${err.message}`, '⚠️');
+      }
+    };
+
+    window.loadProgressFromCloudManual = async function() {
+      if (!fbDb || !currentFbUser) {
+        window.showToast('Silakan login dengan akun Cloud terlebih dahulu.', '⚠️');
+        return;
+      }
+      try {
+        setConnectionStatus('connecting');
+        const userDocRef = doc(fbDb, 'users', currentFbUser.uid);
+        const snap = await getDoc(userDocRef);
+        setConnectionStatus('connected');
+        if (snap.exists() && snap.data().appState) {
+          isApplyingRemoteSnapshot = true;
+          window.applyExternalAppState(snap.data().appState);
+          isApplyingRemoteSnapshot = false;
+          window.showToast('Progress terbaru dari Cloud berhasil dimuat!', '🔄');
+        } else {
+          window.showToast('Belum ada cadangan progres di Cloud untuk akun ini.', 'ℹ️');
+        }
+      } catch (err) {
+        setConnectionStatus('disconnected');
+        window.showToast(`Gagal memuat dari Cloud: ${err.message}`, '⚠️');
+      }
+    };
+
+    // Profile Settings Credential Update (Username, Password, Recovery Code)
+    window.updateCloudAccountCredentials = async function({ newUsername, newPassword, newRecoveryCode }) {
+      const cleanNewUser = sanitizeUsername(newUsername);
+      if (!currentFbUser || !fbAuth || !fbDb) {
+        // Offline / Local mode username update
+        window.setLocalProfileUsername(cleanNewUser);
+        updateHeaderCloudBadge(null);
+        return { ok: true, message: 'Profil lokal berhasil diperbarui!' };
+      }
+
+      const oldUsername = currentFbUser.email ? currentFbUser.email.split('@')[0] : '';
+      let activeUsername = oldUsername;
+
+      // 1. Update Username if changed
+      if (cleanNewUser && cleanNewUser !== oldUsername) {
+        if (cleanNewUser.length < 3) {
+          throw new Error('Username minimal 3 karakter.');
+        }
+        const newVaultRef = doc(fbDb, 'recovery_vault', cleanNewUser);
+        const existingSnap = await getDoc(newVaultRef);
+        if (existingSnap.exists() && existingSnap.data().uid !== currentFbUser.uid) {
+          throw new Error('Username tersebut sudah digunakan akun lain.');
+        }
+
+        const newInternalEmail = usernameToInternalEmail(cleanNewUser);
+        await updateEmail(currentFbUser, newInternalEmail);
+
+        const oldVaultRef = doc(fbDb, 'recovery_vault', oldUsername);
+        const oldVaultSnap = await getDoc(oldVaultRef);
+        const prevVaultData = oldVaultSnap.exists() ? oldVaultSnap.data() : {};
+
+        await setDoc(newVaultRef, {
+          ...prevVaultData,
+          username: cleanNewUser,
+          uid: currentFbUser.uid,
+          updatedAt: new Date().toISOString()
+        });
+        if (oldUsername && oldUsername !== cleanNewUser) {
+          try { await deleteDoc(oldVaultRef); } catch (e) {}
+        }
+        activeUsername = cleanNewUser;
+      }
+
+      // 2. Update Password if filled
+      if (newPassword && newPassword.trim().length > 0) {
+        if (newPassword.trim().length < 6) {
+          throw new Error('Password baru minimal 6 karakter.');
+        }
+        await updatePassword(currentFbUser, newPassword.trim());
+      }
+
+      // 3. Update Recovery Code if filled
+      if (newRecoveryCode && newRecoveryCode.trim().length > 0) {
+        if (newRecoveryCode.trim().length < 4) {
+          throw new Error('Kode pemulihan minimal 4 karakter.');
+        }
+        const newHash = await hashStringSHA256(`${activeUsername}:${newRecoveryCode.trim().toLowerCase()}`);
+        await setDoc(doc(fbDb, 'recovery_vault', activeUsername), {
+          username: activeUsername,
+          uid: currentFbUser.uid,
+          recoveryHash: newHash,
+          updatedAt: new Date().toISOString()
+        }, { merge: true });
+      }
+
+      updateHeaderCloudBadge(currentFbUser);
+      await pushLocalStateToCloud();
+      return { ok: true, message: 'Perubahan profil & keamanan akun Cloud berhasil disimpan!' };
+    };
+
+    window.getActiveAccountInfo = function() {
+      if (currentFbUser) {
+        const uname = currentFbUser.email ? currentFbUser.email.split('@')[0] : currentFbUser.uid.slice(0, 8);
+        return { isCloud: true, username: uname };
+      }
+      return {
+        isCloud: false,
+        username: window.getLocalProfileUsername ? window.getLocalProfileUsername() : ''
+      };
     };
 
     window.togglePasswordVisibility = function(inputId, btnEl) {
@@ -1601,14 +1911,22 @@
     };
 
     window.handleAuthLogout = async function() {
-      if (!fbAuth) return;
-      try {
-        await signOut(fbAuth);
-        window.showToast('Anda telah keluar dari akun Cloud.', '👋');
-        window.openAuthGateModal();
-      } catch (err) {
-        console.warn(err);
+      localStorage.removeItem(OFFLINE_MODE_PREF_KEY);
+      if (fbAuth && currentFbUser) {
+        try {
+          await signOut(fbAuth);
+          window.showToast('Anda telah keluar dari akun Cloud.', '👋');
+        } catch (err) {
+          console.warn(err);
+        }
+      } else {
+        window.showToast('Sesi ditutup. Silakan masuk kembali.', '👋');
       }
+      window.openAuthGateModal();
+    };
+
+    window.handleHeaderAuthAction = function() {
+      window.handleAuthLogout();
     };
 
     // Firebase Config Modal Handlers
@@ -1781,6 +2099,11 @@
     // =========================================================================
     let appState = {
       customTitle: 'JUDUL TULIS DISINI',
+      profile: {
+        icon: '🧑‍🎓',
+        photoDataUrl: '',
+        localUsername: ''
+      },
       modules: JSON.parse(JSON.stringify(INITIAL_MODULES)),
       dailyLogs: {}, // { 'YYYY-MM-DD': { minutes: number, completed: boolean } }
       errorLogs: [],
@@ -1788,6 +2111,16 @@
       trackerFilterPhase: 'ALL',
       trackerFilterStatus: 'ALL',
       timerModeMinutes: 30
+    };
+
+    window.getLocalProfileUsername = function() {
+      return (appState.profile && appState.profile.localUsername) || '';
+    };
+
+    window.setLocalProfileUsername = function(uname) {
+      if (!appState.profile) appState.profile = { icon: '🧑‍🎓', photoDataUrl: '', localUsername: '' };
+      appState.profile.localUsername = uname;
+      saveState();
     };
 
     window.getCurrentAppState = function() {
@@ -1800,6 +2133,11 @@
         ...appState,
         ...incomingState,
         customTitle: incomingState.customTitle || 'JUDUL TULIS DISINI',
+        profile: {
+          icon: (incomingState.profile && incomingState.profile.icon) || '🧑‍🎓',
+          photoDataUrl: (incomingState.profile && incomingState.profile.photoDataUrl) || '',
+          localUsername: (incomingState.profile && incomingState.profile.localUsername) || ''
+        },
         modules: Array.isArray(incomingState.modules) && incomingState.modules.length > 0 ? incomingState.modules : appState.modules,
         dailyLogs: incomingState.dailyLogs || {},
         errorLogs: Array.isArray(incomingState.errorLogs) ? incomingState.errorLogs : [],
@@ -1823,6 +2161,7 @@
         timerRemainingSeconds = timerTotalSeconds;
       }
 
+      renderProfileAvatarUI();
       updateTimerUI();
       updateHeaderDashboard();
       renderModules();
@@ -1891,6 +2230,7 @@
       if (titleEl) {
         titleEl.textContent = appState.customTitle || 'JUDUL TULIS DISINI';
       }
+      renderProfileAvatarUI();
       updateDocumentTitleWithTimer();
 
       const modeSelect = document.getElementById('timerModeSelect');
@@ -1950,11 +2290,199 @@
     }
 
     function updateDocumentTitleWithTimer() {
-      const baseTitle = appState.customTitle || 'JUDUL TULIS DISINI';
+      const baseTitle = 'Tracker Study Mastery';
       if (timerRunning) {
         document.title = `[${formatSecondsToMMSS(timerRemainingSeconds)}] ${baseTitle}`;
       } else {
-        document.title = `${baseTitle} • Study & Mastery Tracker`;
+        document.title = baseTitle;
+      }
+    }
+
+    // =========================================================================
+    // 3B. PROFILE AVATAR, PHOTO UPLOAD (MAX 3MB) & CREDENTIAL SETTINGS
+    // =========================================================================
+    function renderProfileAvatarUI() {
+      const prof = appState.profile || { icon: '🧑‍🎓', photoDataUrl: '' };
+      const headerImg = document.getElementById('headerProfileImg');
+      const headerIcon = document.getElementById('headerProfileIcon');
+      const modalImg = document.getElementById('modalProfilePreviewImg');
+      const modalIcon = document.getElementById('modalProfilePreviewIcon');
+
+      if (prof.photoDataUrl) {
+        if (headerImg) {
+          headerImg.src = prof.photoDataUrl;
+          headerImg.classList.remove('hidden');
+        }
+        if (headerIcon) headerIcon.classList.add('hidden');
+        if (modalImg) {
+          modalImg.src = prof.photoDataUrl;
+          modalImg.classList.remove('hidden');
+        }
+        if (modalIcon) modalIcon.classList.add('hidden');
+      } else {
+        const iconChar = prof.icon || '🧑‍🎓';
+        if (headerImg) headerImg.classList.add('hidden');
+        if (headerIcon) {
+          headerIcon.textContent = iconChar;
+          headerIcon.classList.remove('hidden');
+        }
+        if (modalImg) modalImg.classList.add('hidden');
+        if (modalIcon) {
+          modalIcon.textContent = iconChar;
+          modalIcon.classList.remove('hidden');
+        }
+      }
+    }
+
+    function openProfileSettingsModal() {
+      const alertBox = document.getElementById('profileModalAlert');
+      if (alertBox) alertBox.classList.add('hidden');
+
+      const info = window.getActiveAccountInfo ? window.getActiveAccountInfo() : { isCloud: false, username: '' };
+      const subEl = document.getElementById('profileModalAccountSubtitle');
+      const credForm = document.getElementById('profileCredentialsForm');
+      const userInput = document.getElementById('profEditUsername');
+      const passInput = document.getElementById('profEditPassword');
+      const recInput = document.getElementById('profEditRecoveryCode');
+
+      if (subEl) {
+        subEl.textContent = info.isCloud
+          ? `Terhubung sebagai @${info.username} (Cloud Account)`
+          : 'Mode Lokal — Atur foto profil atau cadangkan progres';
+      }
+      if (credForm) {
+        credForm.classList.toggle('hidden', !info.isCloud);
+      }
+      if (userInput) userInput.value = info.username || '';
+      if (passInput) {
+        passInput.value = '';
+        passInput.disabled = !info.isCloud;
+        passInput.placeholder = 'Kosongkan jika tetap';
+      }
+      if (recInput) {
+        recInput.value = '';
+        recInput.disabled = !info.isCloud;
+        recInput.placeholder = 'Contoh: EL SAWITE';
+      }
+
+      if (typeof window.refreshAccountModeUI === 'function') {
+        window.refreshAccountModeUI();
+      }
+      renderProfileAvatarUI();
+      openModal('profileSettingsModal');
+    }
+
+    function selectPresetProfileIcon(iconStr) {
+      if (!appState.profile) appState.profile = { icon: '🧑‍🎓', photoDataUrl: '', localUsername: '' };
+      appState.profile.icon = iconStr;
+      appState.profile.photoDataUrl = '';
+      saveState();
+      renderProfileAvatarUI();
+      showToast(`Ikon profil diubah menjadi ${iconStr}`, '✨');
+    }
+
+    function resetProfilePhotoToDefaultIcon() {
+      selectPresetProfileIcon('🧑‍🎓');
+    }
+
+    function handleProfilePhotoUpload(event) {
+      const file = event.target.files[0];
+      const alertBox = document.getElementById('profileModalAlert');
+      if (alertBox) alertBox.classList.add('hidden');
+      if (!file) return;
+
+      const MAX_BYTES = 3 * 1024 * 1024; // 3MB
+      if (file.size > MAX_BYTES) {
+        if (alertBox) {
+          alertBox.textContent = '⚠️ Ukuran foto melebihi batas maksimal 3 MB. Silakan pilih foto yang lebih kecil.';
+          alertBox.className = 'p-3 rounded-xl text-xs font-semibold bg-rose-50 border border-rose-200 text-rose-700';
+          alertBox.classList.remove('hidden');
+        }
+        event.target.value = '';
+        return;
+      }
+
+      if (!file.type.startsWith('image/')) {
+        if (alertBox) {
+          alertBox.textContent = '⚠️ File harus berupa gambar (JPG, PNG, WebP, dll).';
+          alertBox.className = 'p-3 rounded-xl text-xs font-semibold bg-rose-50 border border-rose-200 text-rose-700';
+          alertBox.classList.remove('hidden');
+        }
+        event.target.value = '';
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const img = new Image();
+        img.onload = function() {
+          // Resize avatar cleanly to max 256x256 so Firestore & localStorage remain fast & lightweight
+          const canvas = document.createElement('canvas');
+          const maxDim = 256;
+          let w = img.width;
+          let h = img.height;
+          if (w > h && w > maxDim) {
+            h = Math.round((h * maxDim) / w);
+            w = maxDim;
+          } else if (h >= w && h > maxDim) {
+            w = Math.round((w * maxDim) / h);
+            h = maxDim;
+          }
+          canvas.width = w;
+          canvas.height = h;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, w, h);
+          const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.85);
+
+          if (!appState.profile) appState.profile = { icon: '🧑‍🎓', photoDataUrl: '', localUsername: '' };
+          appState.profile.photoDataUrl = compressedDataUrl;
+          saveState();
+          renderProfileAvatarUI();
+          showToast('Foto profil berhasil diperbarui!', '📷');
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    async function saveProfileCredentials(e) {
+      e.preventDefault();
+      const alertBox = document.getElementById('profileModalAlert');
+      const btn = document.getElementById('btnSaveProfileChanges');
+      if (alertBox) alertBox.classList.add('hidden');
+
+      const newUsername = document.getElementById('profEditUsername').value.trim();
+      const newPassword = document.getElementById('profEditPassword').value;
+      const newRecoveryCode = document.getElementById('profEditRecoveryCode').value;
+
+      btn.disabled = true;
+      btn.textContent = 'Menyimpan...';
+
+      try {
+        if (typeof window.updateCloudAccountCredentials === 'function') {
+          const res = await window.updateCloudAccountCredentials({
+            newUsername,
+            newPassword,
+            newRecoveryCode
+          });
+          if (alertBox) {
+            alertBox.textContent = `✅ ${res.message}`;
+            alertBox.className = 'p-3 rounded-xl text-xs font-semibold bg-emerald-50 border border-emerald-200 text-emerald-800';
+            alertBox.classList.remove('hidden');
+          }
+          document.getElementById('profEditPassword').value = '';
+          document.getElementById('profEditRecoveryCode').value = '';
+          showToast(res.message, '✅');
+        }
+      } catch (err) {
+        if (alertBox) {
+          alertBox.textContent = `⚠️ ${err.message}`;
+          alertBox.className = 'p-3 rounded-xl text-xs font-semibold bg-rose-50 border border-rose-200 text-rose-700';
+          alertBox.classList.remove('hidden');
+        }
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Simpan Perubahan Profil & Keamanan';
       }
     }
 
@@ -2017,7 +2545,8 @@
       const targetMin = getTargetMinutesForDate(today);
       const log = appState.dailyLogs[today] || { minutes: 0, completed: false };
 
-      document.getElementById('todayDateLabel').textContent = formatIndonesianDate(today);
+      const todayDateEl = document.getElementById('todayDateLabel');
+      if (todayDateEl) todayDateEl.textContent = formatIndonesianDate(today);
       const calTargetText = document.getElementById('calActiveTargetText');
       if (calTargetText) {
         calTargetText.textContent = `${appState.timerModeMinutes} menit`;
@@ -2027,49 +2556,63 @@
       const statusBadge = document.getElementById('todayStatusBadge');
       const btnCheckIn = document.getElementById('btnCheckInToday');
 
-      if (targetMin === 0) {
-        dayTypeBadge.textContent = 'Minggu (Off)';
-        dayTypeBadge.className = 'text-[10px] font-bold px-2 py-0.5 rounded bg-purple-500/30 text-purple-200';
-      } else {
-        dayTypeBadge.textContent = `Target ${targetMin}m`;
-        dayTypeBadge.className = 'text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-500/30 text-emerald-200';
+      if (dayTypeBadge) {
+        if (targetMin === 0) {
+          dayTypeBadge.textContent = 'Minggu (Off)';
+          dayTypeBadge.className = 'text-[10px] font-bold px-2 py-0.5 rounded bg-purple-500/30 text-purple-200';
+        } else {
+          dayTypeBadge.textContent = `Target ${targetMin}m`;
+          dayTypeBadge.className = 'text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-500/30 text-emerald-200';
+        }
       }
 
       const isCompleted = log.completed || (targetMin > 0 && log.minutes >= targetMin);
-      if (targetMin === 0 && !log.completed && log.minutes === 0) {
-        statusBadge.textContent = 'Hari Istirahat (Off)';
-        statusBadge.className = 'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold bg-purple-500/20 text-purple-200 border border-purple-400/30';
-        btnCheckIn.textContent = 'Bonus Belajar ✓';
-      } else if (isCompleted) {
-        statusBadge.textContent = 'Target Tercapai ✓';
-        statusBadge.className = 'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-400/40';
-        btnCheckIn.textContent = 'Selesai ✓';
-      } else if (log.minutes > 0) {
-        statusBadge.textContent = 'Sedang Berjalan...';
-        statusBadge.className = 'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold bg-sky-500/20 text-sky-300 border border-sky-400/30';
-        btnCheckIn.textContent = 'Check-In ✓';
-      } else {
-        statusBadge.textContent = 'Belum Belajar';
-        statusBadge.className = 'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold bg-amber-500/20 text-amber-300 border border-amber-400/30';
-        btnCheckIn.textContent = 'Check-In ✓';
+      if (statusBadge && btnCheckIn) {
+        if (targetMin === 0 && !log.completed && log.minutes === 0) {
+          statusBadge.textContent = 'Hari Istirahat (Off)';
+          statusBadge.className = 'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold bg-purple-500/20 text-purple-200 border border-purple-400/30';
+          btnCheckIn.textContent = 'Bonus Belajar ✓';
+        } else if (isCompleted) {
+          statusBadge.textContent = 'Target Tercapai ✓';
+          statusBadge.className = 'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-400/40';
+          btnCheckIn.textContent = 'Selesai ✓';
+        } else if (log.minutes > 0) {
+          statusBadge.textContent = 'Sedang Berjalan...';
+          statusBadge.className = 'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold bg-sky-500/20 text-sky-300 border border-sky-400/30';
+          btnCheckIn.textContent = 'Check-In ✓';
+        } else {
+          statusBadge.textContent = 'Belum Belajar';
+          statusBadge.className = 'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold bg-amber-500/20 text-amber-300 border border-amber-400/30';
+          btnCheckIn.textContent = 'Check-In ✓';
+        }
       }
 
-      document.getElementById('todayMinutesText').textContent = log.minutes;
-      document.getElementById('todayTargetText').textContent = targetMin === 0 ? '/ Libur (Opsional)' : `/ ${targetMin} menit`;
+      const todayMinEl = document.getElementById('todayMinutesText');
+      const todayTgtEl = document.getElementById('todayTargetText');
+      const todayBarEl = document.getElementById('todayProgressBar');
+      if (todayMinEl) todayMinEl.textContent = log.minutes;
+      if (todayTgtEl) todayTgtEl.textContent = targetMin === 0 ? '/ Libur (Opsional)' : `/ ${targetMin} menit`;
       const pctToday = targetMin === 0 ? (log.minutes > 0 ? 100 : 0) : Math.min(100, Math.round((log.minutes / targetMin) * 100));
-      document.getElementById('todayProgressBar').style.width = `${pctToday}%`;
+      if (todayBarEl) todayBarEl.style.width = `${pctToday}%`;
 
       const totalMods = appState.modules.length;
       const masteredMods = appState.modules.filter(m => m.steps.every(Boolean)).length;
       const pctMastery = totalMods > 0 ? Math.round((masteredMods / totalMods) * 100) : 0;
-      document.getElementById('masteredCountText').textContent = masteredMods;
-      document.getElementById('totalThemesCountText').textContent = `/ ${totalMods} modul (Fase 1–3)`;
-      document.getElementById('masteryPercentText').textContent = `${pctMastery}%`;
-      document.getElementById('masteryProgressBar').style.width = `${pctMastery}%`;
+      const masteredCountEl = document.getElementById('masteredCountText');
+      const totalThemesEl = document.getElementById('totalThemesCountText');
+      const masteryPctEl = document.getElementById('masteryPercentText');
+      const masteryBarEl = document.getElementById('masteryProgressBar');
+      if (masteredCountEl) masteredCountEl.textContent = masteredMods;
+      if (totalThemesEl) totalThemesEl.textContent = `/ ${totalMods} modul (Fase 1–3)`;
+      if (masteryPctEl) masteryPctEl.textContent = `${pctMastery}%`;
+      if (masteryBarEl) masteryBarEl.style.width = `${pctMastery}%`;
 
-      document.getElementById('streakCountText').textContent = calculateStreak();
-      document.getElementById('badgeErrorCount').textContent = appState.errorLogs.length;
-      document.getElementById('badgeFlashcardCount').textContent = appState.flashcards.length;
+      const streakEl = document.getElementById('streakCountText');
+      const badgeErrEl = document.getElementById('badgeErrorCount');
+      const badgeFcEl = document.getElementById('badgeFlashcardCount');
+      if (streakEl) streakEl.textContent = calculateStreak();
+      if (badgeErrEl) badgeErrEl.textContent = appState.errorLogs.length;
+      if (badgeFcEl) badgeFcEl.textContent = appState.flashcards.length;
       const notchErrBadge = document.getElementById('notchBadgeErrorCount');
       const notchFcBadge = document.getElementById('notchBadgeFlashcardCount');
       if (notchErrBadge) notchErrBadge.textContent = appState.errorLogs.length;
@@ -3103,6 +3646,7 @@
 
       const titleEl = document.getElementById('editableMainTitle');
       if (titleEl) titleEl.textContent = appState.customTitle;
+      renderProfileAvatarUI();
       const modeSelect = document.getElementById('timerModeSelect');
       if (modeSelect) modeSelect.value = String(appState.timerModeMinutes);
       resetTimer();
@@ -3127,6 +3671,11 @@
       localStorage.removeItem(STORAGE_KEY);
       appState = {
         customTitle: 'JUDUL TULIS DISINI',
+        profile: {
+          icon: '🧑‍🎓',
+          photoDataUrl: '',
+          localUsername: ''
+        },
         modules: JSON.parse(JSON.stringify(INITIAL_MODULES)),
         dailyLogs: {},
         errorLogs: [],
@@ -3137,6 +3686,7 @@
       };
       const titleEl = document.getElementById('editableMainTitle');
       if (titleEl) titleEl.textContent = appState.customTitle;
+      renderProfileAvatarUI();
       const modeSelect = document.getElementById('timerModeSelect');
       if (modeSelect) modeSelect.value = '30';
       resetTimer();
