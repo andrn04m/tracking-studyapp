@@ -82,14 +82,21 @@
       background: #94A3B8;
       border-radius: 9999px;
     }
+    /* Strict Scroll Lock while Auth Gate is Open */
+    html.auth-locked,
+    body.auth-locked {
+      overflow: hidden !important;
+      height: 100vh !important;
+      overscroll-behavior: none !important;
+    }
   </style>
 </head>
-<body class="min-h-screen flex flex-col">
+<body class="min-h-screen flex flex-col auth-locked">
 
   <!-- ===================================================================== -->
   <!-- AUTHENTICATION GATE OVERLAY (MODERN SPLIT-CARD DESIGN)                -->
   <!-- ===================================================================== -->
-  <div id="authGateOverlay" class="fixed inset-0 bg-indigo-950/75 backdrop-blur-md z-[60] flex items-center justify-center p-3 sm:p-6 overflow-y-auto">
+  <div id="authGateOverlay" class="fixed inset-0 bg-indigo-950/80 backdrop-blur-md z-[60] flex items-center justify-center p-3 sm:p-6 overflow-y-auto overscroll-contain">
     <div class="bg-white rounded-3xl max-w-4xl w-full p-2.5 sm:p-3.5 shadow-2xl border border-slate-200/80 grid grid-cols-1 md:grid-cols-12 gap-3 sm:gap-4 my-auto">
 
       <!-- LEFT COLUMN: MESH GRADIENT VISUAL PANEL -->
@@ -484,7 +491,7 @@
               <span id="streakCountText" class="text-2xl font-extrabold text-amber-400">0</span>
               <span class="text-xs text-slate-300 font-semibold">hari berturut</span>
             </div>
-            <p class="text-[11px] text-slate-400">Minggu Off tidak memutus streak</p>
+            <p class="text-[11px] text-slate-400">Hari Off tidak memutus streak</p>
           </div>
           <div class="w-11 h-11 rounded-2xl bg-amber-500/20 border border-amber-400/30 flex items-center justify-center text-2xl shrink-0">
             🔥
@@ -536,14 +543,15 @@
             <span class="px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-bold">
               ✓ <span id="calMonthActiveCount">0</span> Hari Aktif Bulan Ini
             </span>
+            <button type="button" onclick="openOffDaysModal()" class="px-3 py-1.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 text-xs font-bold transition flex items-center gap-1.5">
+              <span>⚙️</span>
+              <span>Atur Hari Off</span>
+            </button>
             <div class="inline-flex items-center gap-1 bg-slate-100 p-1 rounded-xl border border-slate-200">
               <button type="button" onclick="changeCalendarMonth(-1)" class="px-2.5 py-1 rounded-lg hover:bg-white text-xs font-bold text-slate-700 transition">←</button>
               <span id="calMonthYearTitle" class="px-2 text-xs font-extrabold text-navy-900 min-w-[115px] text-center">November 2026</span>
               <button type="button" onclick="changeCalendarMonth(1)" class="px-2.5 py-1 rounded-lg hover:bg-white text-xs font-bold text-slate-700 transition">→</button>
             </div>
-            <button type="button" onclick="jumpCalendarToToday()" class="px-3 py-1.5 rounded-xl bg-navy-900 hover:bg-navy-800 text-white text-xs font-bold transition">
-              Hari Ini
-            </button>
           </div>
         </div>
 
@@ -1166,6 +1174,60 @@
     </div>
   </div>
 
+  <!-- Modal 7: Pengaturan Hari Off (Merah) Manual -->
+  <div id="offDaysSettingsModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-lg w-full p-5 sm:p-6 shadow-2xl border border-slate-200 space-y-5 max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+        <div>
+          <h3 class="text-base sm:text-lg font-extrabold text-navy-900">Pengaturan Jadwal Off (Libur)</h3>
+          <p class="text-xs text-slate-500">Hari Off ditandai merah, target 0 menit, dan tidak memutus streak</p>
+        </div>
+        <button onclick="closeModal('offDaysSettingsModal')" class="text-slate-400 hover:text-slate-600 font-bold text-lg">✕</button>
+      </div>
+
+      <!-- 1. Hari Off Rutin Mingguan -->
+      <div class="p-4 rounded-xl bg-rose-50/70 border border-rose-200 space-y-2.5">
+        <div class="flex items-center justify-between">
+          <h4 class="text-xs sm:text-sm font-extrabold text-rose-950">1. Hari Off Rutin dalam Seminggu</h4>
+          <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-rose-200 text-rose-900">Otomatis Tiap Pekan</span>
+        </div>
+        <p class="text-xs text-rose-800 leading-relaxed">
+          Centang hari rutin yang Anda jadikan hari istirahat/off setiap minggunya (misalnya Jumat dan/atau Minggu):
+        </p>
+        <div class="grid grid-cols-4 sm:grid-cols-7 gap-1.5 pt-1" id="recurringOffWeekdaysGrid">
+          <!-- Populated dynamically -->
+        </div>
+      </div>
+
+      <!-- 2. Tanggal Spesifik Off Manual -->
+      <div class="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-3">
+        <h4 class="text-xs sm:text-sm font-extrabold text-navy-900">2. Tandai Tanggal Tertentu sebagai Off</h4>
+        <p class="text-xs text-slate-600">
+          Pilih tanggal tertentu (misalnya acara keluarga, lembur, atau istirahat khusus) untuk menandainya sebagai hari Off merah:
+        </p>
+        <div class="flex flex-col sm:flex-row gap-2">
+          <input type="date" id="customOffDateInput" class="flex-1 px-3 py-2 rounded-xl border border-slate-300 bg-white text-xs sm:text-sm font-semibold text-navy-900" />
+          <button type="button" onclick="addCustomOffDate()" class="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold shadow transition whitespace-nowrap">
+            + Tambah Off
+          </button>
+        </div>
+
+        <div class="space-y-1.5 pt-1">
+          <p class="text-[11px] font-bold text-slate-500">Daftar Tanggal Off Spesifik:</p>
+          <div id="customOffDatesList" class="flex flex-wrap gap-1.5 max-h-32 overflow-y-auto">
+            <!-- Populated dynamically -->
+          </div>
+        </div>
+      </div>
+
+      <div class="flex justify-end pt-2 border-t border-slate-100">
+        <button type="button" onclick="closeModal('offDaysSettingsModal')" class="px-5 py-2.5 rounded-xl bg-navy-900 hover:bg-navy-800 text-white text-xs sm:text-sm font-bold shadow transition">
+          Selesai & Terapkan
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- TOAST NOTIFICATION -->
   <div id="toastNotification" class="fixed bottom-5 right-5 z-[80] transform translate-y-20 opacity-0 transition-all duration-300 pointer-events-none">
     <div class="bg-navy-900 text-white px-4 py-3 rounded-xl shadow-xl border border-emerald-500/40 flex items-center gap-2.5 text-xs sm:text-sm font-semibold">
@@ -1179,6 +1241,8 @@
     import { initializeApp, getApps, deleteApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
     import {
       getAuth,
+      setPersistence,
+      browserSessionPersistence,
       createUserWithEmailAndPassword,
       signInWithEmailAndPassword,
       signOut,
@@ -1209,7 +1273,11 @@
     };
 
     const FB_CONFIG_STORAGE_KEY = 'CASN_DKI_2027_FIREBASE_CUSTOM_CONFIG';
-    const OFFLINE_MODE_PREF_KEY = 'CASN_DKI_2027_OFFLINE_BYPASS';
+    const SESSION_OFFLINE_KEY = 'CASN_DKI_2027_SESSION_OFFLINE_ACTIVE';
+    const LEGACY_OFFLINE_KEY = 'CASN_DKI_2027_OFFLINE_BYPASS';
+
+    // Clean up any legacy persistent localStorage bypass so every new browser/tab requires login
+    try { localStorage.removeItem(LEGACY_OFFLINE_KEY); } catch (e) {}
 
     let fbApp = null;
     let fbAuth = null;
@@ -1218,6 +1286,21 @@
     let unsubscribeUserDoc = null;
     let isApplyingRemoteSnapshot = false;
     let currentConnectionState = 'connecting'; // 'connecting' | 'connected' | 'disconnected'
+
+    function isSessionOfflineActive() {
+      try {
+        return sessionStorage.getItem(SESSION_OFFLINE_KEY) === 'true';
+      } catch (e) {
+        return false;
+      }
+    }
+
+    function setSessionOfflineActive(active) {
+      try {
+        if (active) sessionStorage.setItem(SESSION_OFFLINE_KEY, 'true');
+        else sessionStorage.removeItem(SESSION_OFFLINE_KEY);
+      } catch (e) {}
+    }
 
     function getActiveFirebaseConfig() {
       try {
@@ -1289,19 +1372,16 @@
       const label = labelMap[effectiveState] || 'Menyambungkan';
       const dotCls = dotClassMap[effectiveState] || dotClassMap.connecting;
 
-      // 1. Auth Overlay Badge
       const authDot = document.getElementById('authFirebaseDot');
       const authTxt = document.getElementById('authFirebaseStatusText');
       if (authDot) authDot.className = dotCls;
       if (authTxt) authTxt.textContent = label;
 
-      // 2. Main Header Badge
       const headerDot = document.getElementById('headerConnDot');
       const headerTxt = document.getElementById('headerConnStatusText');
       if (headerDot) headerDot.className = dotCls;
       if (headerTxt) headerTxt.textContent = label;
 
-      // 3. Save / Load Tab Badge
       const syncBadge = document.getElementById('syncTabConnBadge');
       const syncDot = document.getElementById('syncTabConnDot');
       const syncTxt = document.getElementById('syncTabConnText');
@@ -1323,17 +1403,14 @@
       const btnLogout = document.getElementById('btnHeaderLogout');
       const syncSummary = document.getElementById('syncAccountSummary');
 
-      // Header Save/Load toggle (Separated for Cloud, Combined for Local)
       const btnHeaderCombined = document.getElementById('btnHeaderCombinedSaveLoad');
       const headerCloudGroup = document.getElementById('headerCloudSaveLoadGroup');
 
-      // Sync Tab Save/Load toggle
       const syncTitle = document.getElementById('syncSectionTitle');
       const syncSub = document.getElementById('syncSectionSubtitle');
       const syncLocalActions = document.getElementById('syncTabLocalActions');
       const syncCloudActions = document.getElementById('syncTabCloudActions');
 
-      // Profile Modal Save/Load toggle
       const profLocalSL = document.getElementById('profileModalLocalSaveLoad');
       const profCloudSL = document.getElementById('profileModalCloudSaveLoad');
 
@@ -1345,9 +1422,8 @@
           btnLogout.textContent = 'Log Out';
           btnLogout.classList.remove('hidden');
         }
-        if (syncSummary) syncSummary.textContent = `Akun aktif: @${displayUsername} • Save & Load Cloud aktif.`;
+        if (syncSummary) syncSummary.textContent = `Akun aktif: @${displayUsername} • Sesi per Tab/Browser • Save & Load Cloud aktif.`;
 
-        // Show separate Save & Load Progress buttons for Cloud Account
         if (btnHeaderCombined) btnHeaderCombined.classList.add('hidden');
         if (headerCloudGroup) {
           headerCloudGroup.classList.remove('hidden');
@@ -1373,9 +1449,8 @@
           btnLogout.textContent = 'Log Out';
           btnLogout.classList.remove('hidden');
         }
-        if (syncSummary) syncSummary.textContent = 'Status: Mode Lokal (Login dengan akun Cloud untuk Save/Load Cloud).';
+        if (syncSummary) syncSummary.textContent = 'Status: Mode Lokal (Sesi berakhir saat tab/browser ditutup).';
 
-        // Show combined Save / Load Progress button for Local Mode
         if (btnHeaderCombined) btnHeaderCombined.classList.remove('hidden');
         if (headerCloudGroup) {
           headerCloudGroup.classList.add('hidden');
@@ -1405,8 +1480,10 @@
       const cfg = getActiveFirebaseConfig();
       if (!cfg) {
         setConnectionStatus('disconnected');
-        if (localStorage.getItem(OFFLINE_MODE_PREF_KEY) === 'true') {
-          document.getElementById('authGateOverlay')?.classList.add('hidden');
+        if (isSessionOfflineActive()) {
+          window.unlockAppInterface();
+        } else {
+          window.lockAppInterface();
         }
         return;
       }
@@ -1417,6 +1494,8 @@
         }
         fbApp = initializeApp(cfg);
         fbAuth = getAuth(fbApp);
+        // Enforce strict per-browser-session / tab persistence
+        await setPersistence(fbAuth, browserSessionPersistence);
         fbDb = getFirestore(fbApp);
         setConnectionStatus(navigator.onLine ? 'connected' : 'disconnected');
 
@@ -1430,19 +1509,24 @@
           }
 
           if (user) {
-            localStorage.removeItem(OFFLINE_MODE_PREF_KEY);
-            document.getElementById('authGateOverlay')?.classList.add('hidden');
+            setSessionOfflineActive(false);
+            window.unlockAppInterface();
             setConnectionStatus('connected');
             attachFirestoreSyncListener(user);
           } else {
-            if (localStorage.getItem(OFFLINE_MODE_PREF_KEY) !== 'true') {
-              document.getElementById('authGateOverlay')?.classList.remove('hidden');
+            if (isSessionOfflineActive()) {
+              window.unlockAppInterface();
+            } else {
+              window.lockAppInterface();
             }
           }
         });
       } catch (err) {
         console.error('Firebase init error:', err);
         setConnectionStatus('disconnected');
+        if (!isSessionOfflineActive()) {
+          window.lockAppInterface();
+        }
       }
     }
 
@@ -1490,7 +1574,6 @@
       pushLocalStateToCloud();
     };
 
-    // Explicit Cloud Save & Load Progress Actions for Logged-in Cloud Users
     window.saveProgressToCloudManual = async function() {
       if (!fbDb || !currentFbUser) {
         window.showToast('Silakan login dengan akun Cloud terlebih dahulu.', '⚠️');
@@ -1537,11 +1620,9 @@
       }
     };
 
-    // Profile Settings Credential Update (Username, Password, Recovery Code)
     window.updateCloudAccountCredentials = async function({ newUsername, newPassword, newRecoveryCode }) {
       const cleanNewUser = sanitizeUsername(newUsername);
       if (!currentFbUser || !fbAuth || !fbDb) {
-        // Offline / Local mode username update
         window.setLocalProfileUsername(cleanNewUser);
         updateHeaderCloudBadge(null);
         return { ok: true, message: 'Profil lokal berhasil diperbarui!' };
@@ -1550,7 +1631,6 @@
       const oldUsername = extractDisplayUsername(currentFbUser);
       let activeUsername = oldUsername;
 
-      // 1. Update Username if changed
       if (cleanNewUser && cleanNewUser !== oldUsername) {
         if (cleanNewUser.length < 3) {
           throw new Error('Username minimal 3 karakter.');
@@ -1583,7 +1663,6 @@
         activeUsername = cleanNewUser;
       }
 
-      // 2. Update Password if filled
       if (newPassword && newPassword.trim().length > 0) {
         if (newPassword.trim().length < 6) {
           throw new Error('Password baru minimal 6 karakter.');
@@ -1591,7 +1670,6 @@
         await updatePassword(currentFbUser, newPassword.trim());
       }
 
-      // 3. Update Recovery Code if filled
       if (newRecoveryCode && newRecoveryCode.trim().length > 0) {
         if (newRecoveryCode.trim().length < 4) {
           throw new Error('Kode pemulihan minimal 4 karakter.');
@@ -1633,17 +1711,17 @@
     };
 
     window.openAuthGateModal = function() {
-      const overlay = document.getElementById('authGateOverlay');
-      if (overlay) overlay.classList.remove('hidden');
+      window.lockAppInterface();
       const alertBox = document.getElementById('authAlertBox');
       if (alertBox) alertBox.classList.add('hidden');
       switchAuthTab('login');
     };
 
     window.continueInOfflineMode = function() {
-      localStorage.setItem(OFFLINE_MODE_PREF_KEY, 'true');
-      document.getElementById('authGateOverlay')?.classList.add('hidden');
-      window.showToast('Berjalan dalam Mode Offline / Lokal.', '💻');
+      setSessionOfflineActive(true);
+      window.unlockAppInterface();
+      updateHeaderCloudBadge(null);
+      window.showToast('Berjalan dalam Mode Offline / Lokal (Sesi aktif selama tab terbuka).', '💻');
     };
 
     window.switchAuthTab = function(viewName) {
@@ -1700,15 +1778,16 @@
       setConnectionStatus('connecting');
 
       try {
+        await setPersistence(fbAuth, browserSessionPersistence);
         const internalEmail = usernameToInternalEmail(username);
         await signInWithEmailAndPassword(fbAuth, internalEmail, password);
         setConnectionStatus('connected');
         window.showToast(`Selamat datang kembali, @${username}!`, '👋');
       } catch (err) {
-        // Fallback kompatibilitas untuk akun lama yang dibuat sebelum penegakan huruf besar/kecil
         const isExactLowercase = username === username.toLowerCase();
         if (isExactLowercase) {
           try {
+            await setPersistence(fbAuth, browserSessionPersistence);
             await signInWithEmailAndPassword(fbAuth, `${username}@casn-tracker.app`, password);
             setConnectionStatus('connected');
             window.showToast(`Selamat datang kembali, @${username}!`, '👋');
@@ -1745,6 +1824,7 @@
       setConnectionStatus('connecting');
 
       try {
+        await setPersistence(fbAuth, browserSessionPersistence);
         const internalEmail = usernameToInternalEmail(username);
         const cred = await createUserWithEmailAndPassword(fbAuth, internalEmail, password);
         const codeHash = await hashStringSHA256(`${username}:${recoveryCode.toLowerCase()}`);
@@ -1820,100 +1900,6 @@
       }
     };
 
-    window.handleAuthRegister = async function(e) {
-      e.preventDefault();
-      if (!fbAuth || !fbDb) {
-        showAuthAlert('Silakan pasang Config Firebase terlebih dahulu melalui tombol "Atur Config".');
-        return;
-      }
-      const username = sanitizeUsername(document.getElementById('regUsername').value);
-      const password = document.getElementById('regPassword').value;
-      const recoveryCode = document.getElementById('regRecoveryCode').value.trim();
-      const recoveryEmail = document.getElementById('regRecoveryEmail').value.trim();
-      const btn = document.getElementById('btnSubmitRegister');
-
-      if (username.length < 3) {
-        showAuthAlert('Username minimal 3 karakter (huruf/angka).');
-        return;
-      }
-
-      btn.disabled = true;
-      btn.textContent = 'Mendaftarkan Akun...';
-
-      try {
-        const internalEmail = usernameToInternalEmail(username);
-        const cred = await createUserWithEmailAndPassword(fbAuth, internalEmail, password);
-        const codeHash = await hashStringSHA256(`${username}:${recoveryCode.toLowerCase()}`);
-
-        await setDoc(doc(fbDb, 'recovery_vault', username), {
-          username,
-          uid: cred.user.uid,
-          recoveryHash: codeHash,
-          recoveryEmail: recoveryEmail || '',
-          createdAt: new Date().toISOString()
-        });
-
-        await pushLocalStateToCloud();
-        window.showToast(`Akun @${username} berhasil dibuat & tersinkron!`, '🎉');
-      } catch (err) {
-        if (err.code === 'auth/email-already-in-use') {
-          showAuthAlert('Username tersebut sudah digunakan. Silakan pilih username lain.');
-        } else {
-          showAuthAlert(`Gagal mendaftar: ${err.message}`);
-        }
-      } finally {
-        btn.disabled = false;
-        btn.textContent = 'Buat Akun & Mulai Belajar ✨';
-      }
-    };
-
-    window.handleAuthReset = async function(e) {
-      e.preventDefault();
-      if (!fbAuth || !fbDb) {
-        showAuthAlert('Firebase belum terhubung.');
-        return;
-      }
-      const username = sanitizeUsername(document.getElementById('resetUsername').value);
-      const recoveryCode = document.getElementById('resetRecoveryCode').value.trim();
-      const newPassword = document.getElementById('resetNewPassword').value;
-
-      if (!username || !recoveryCode || newPassword.length < 6) {
-        showAuthAlert('Lengkapi Username, Kode Pemulihan, dan Password Baru (min. 6 karakter).');
-        return;
-      }
-
-      const btn = document.getElementById('btnSubmitReset');
-      btn.disabled = true;
-      btn.textContent = 'Memverifikasi Kode...';
-
-      try {
-        const vaultSnap = await getDoc(doc(fbDb, 'recovery_vault', username));
-        if (!vaultSnap.exists()) {
-          showAuthAlert('Username tidak ditemukan.');
-          return;
-        }
-        const vaultData = vaultSnap.data();
-        const inputHash = await hashStringSHA256(`${username}:${recoveryCode.toLowerCase()}`);
-
-        if (vaultData.recoveryHash !== inputHash) {
-          showAuthAlert('Kode Pemulihan / PIN Keamanan tidak cocok!');
-          return;
-        }
-
-        if (currentFbUser && currentFbUser.uid === vaultData.uid) {
-          await updatePassword(currentFbUser, newPassword);
-          showAuthAlert('Password berhasil diperbarui! Silakan gunakan password baru Anda.', false);
-        } else {
-          showAuthAlert('Kode Pemulihan terverifikasi valid! Demi keamanan Firebase Auth dari perangkat baru, silakan gunakan tombol kirim link Email Pemulihan di bawah atau hubungi admin proyek Firebase Anda untuk reset sandi langsung di Console.', false);
-        }
-      } catch (err) {
-        showAuthAlert(`Gagal memproses reset: ${err.message}`);
-      } finally {
-        btn.disabled = false;
-        btn.textContent = 'Atur Ulang Password Sekarang';
-      }
-    };
-
     window.sendEmailResetLink = async function() {
       if (!fbAuth || !fbDb) {
         showAuthAlert('Firebase belum terhubung.');
@@ -1937,17 +1923,23 @@
     };
 
     window.handleAuthLogout = async function() {
-      localStorage.removeItem(OFFLINE_MODE_PREF_KEY);
+      setSessionOfflineActive(false);
+      if (unsubscribeUserDoc) {
+        unsubscribeUserDoc();
+        unsubscribeUserDoc = null;
+      }
       if (fbAuth && currentFbUser) {
         try {
           await signOut(fbAuth);
-          window.showToast('Anda telah keluar dari akun Cloud.', '👋');
+          window.showToast('Sesi ditutup. Anda telah keluar dari akun Cloud.', '👋');
         } catch (err) {
           console.warn(err);
         }
       } else {
-        window.showToast('Sesi ditutup. Silakan masuk kembali.', '👋');
+        window.showToast('Sesi Mode Lokal ditutup. Silakan masuk kembali.', '👋');
       }
+      currentFbUser = null;
+      updateHeaderCloudBadge(null);
       window.openAuthGateModal();
     };
 
@@ -2085,36 +2077,36 @@
 
     const INITIAL_MODULES = [
       // FASE 1: TWK (Hal. 1 - 171)
-      { id: 'twk-1', phase: 'FASE1_TWK', category: 'TWK', materialLabel: '1. Implementasi Pancasila', dateRange: 'Fase 1 • Tema 1', title: 'Tema 1: Implementasi Pancasila', bookRef: 'Al Faiz Hal. 2–27 (Teori, Soal & Pembahasan)', durationDays: 2, steps: [false, false, false, false, false, false], notes: 'Pengamalan sila 1–5 dalam kasus nyata & kedudukan Pancasila.' },
-      { id: 'twk-2', phase: 'FASE1_TWK', category: 'TWK', materialLabel: '2. Implementasi UUD 1945', dateRange: 'Fase 1 • Tema 2', title: 'Tema 2: Implementasi UUD 1945', bookRef: 'Al Faiz Hal. 28–49 (Teori, Soal & Pembahasan)', durationDays: 2, steps: [false, false, false, false, false, false], notes: 'Pasal krusial amandemen, lembaga negara, dan hak warga negara.' },
-      { id: 'twk-3', phase: 'FASE1_TWK', category: 'TWK', materialLabel: '3. Nasionalisme', dateRange: 'Fase 1 • Tema 3', title: 'Tema 3: Nasionalisme', bookRef: 'Al Faiz Hal. 50–65 (Teori, Soal & Pembahasan)', durationDays: 2, steps: [false, false, false, false, false, false], notes: 'Semangat kebangsaan, tokoh pergerakan, dan studi kasus wawasan kebangsaan.' },
-      { id: 'twk-4', phase: 'FASE1_TWK', category: 'TWK', materialLabel: '4. Pilar NKRI', dateRange: 'Fase 1 • Tema 4', title: 'Tema 4: Pilar NKRI', bookRef: 'Al Faiz Hal. 66–89 (Teori, Soal & Pembahasan)', durationDays: 2, steps: [false, false, false, false, false, false], notes: 'Bhinneka Tunggal Ika, wawasan nusantara, dan keutuhan NKRI.' },
-      { id: 'twk-5', phase: 'FASE1_TWK', category: 'TWK', materialLabel: '5. Integritas', dateRange: 'Fase 1 • Tema 5', title: 'Tema 5: Integritas', bookRef: 'Al Faiz Hal. 90–111 (Teori, Soal & Pembahasan)', durationDays: 2, steps: [false, false, false, false, false, false], notes: '9 nilai antikorupsi KPK, kejujuran, dan etika penyelenggara negara.' },
-      { id: 'twk-6', phase: 'FASE1_TWK', category: 'TWK', materialLabel: '6. Bela Negara', dateRange: 'Fase 1 • Tema 6', title: 'Tema 6: Bela Negara', bookRef: 'Al Faiz Hal. 112–130 (Teori, Soal & Pembahasan)', durationDays: 2, steps: [false, false, false, false, false, false], notes: 'Nilai dasar bela negara & ancaman non-militer di era digital.' },
-      { id: 'twk-7', phase: 'FASE1_TWK', category: 'TWK', materialLabel: '7. Gagasan Utama', dateRange: 'Fase 1 • Tema 7', title: 'Tema 7: Gagasan Utama', bookRef: 'Al Faiz Hal. 131–152 (Teori, Soal & Pembahasan)', durationDays: 2, steps: [false, false, false, false, false, false], notes: 'Ide pokok paragraf deduktif, induktif, campuran, dan simpulan bacaan.' },
-      { id: 'twk-8', phase: 'FASE1_TWK', category: 'TWK', materialLabel: '8. Kalimat Efektif', dateRange: 'Fase 1 • Tema 8', title: 'Tema 8: Kalimat Efektif', bookRef: 'Al Faiz Hal. 153–171 (Teori, Soal & Pembahasan)', durationDays: 2, steps: [false, false, false, false, false, false], notes: 'PUEBI/EYD V, kehematan kata, kesejajaran bentuk, dan tanda baca.' },
+      { id: 'twk-1', phase: 'FASE1_TWK', category: 'TWK', materialLabel: '1. Implementasi Pancasila', dateRange: 'Fase 1 • Tema 1', title: 'Tema 1: Implementasi Pancasila', bookRef: 'Al Faiz Hal. 2–27 (Teori, Soal & Pembahasan)', durationDays: 2, steps: [false, false, false, false, false, false, false], notes: 'Pengamalan sila 1–5 dalam kasus nyata & kedudukan Pancasila.' },
+      { id: 'twk-2', phase: 'FASE1_TWK', category: 'TWK', materialLabel: '2. Implementasi UUD 1945', dateRange: 'Fase 1 • Tema 2', title: 'Tema 2: Implementasi UUD 1945', bookRef: 'Al Faiz Hal. 28–49 (Teori, Soal & Pembahasan)', durationDays: 2, steps: [false, false, false, false, false, false, false], notes: 'Pasal krusial amandemen, lembaga negara, dan hak warga negara.' },
+      { id: 'twk-3', phase: 'FASE1_TWK', category: 'TWK', materialLabel: '3. Nasionalisme', dateRange: 'Fase 1 • Tema 3', title: 'Tema 3: Nasionalisme', bookRef: 'Al Faiz Hal. 50–65 (Teori, Soal & Pembahasan)', durationDays: 2, steps: [false, false, false, false, false, false, false], notes: 'Semangat kebangsaan, tokoh pergerakan, dan studi kasus wawasan kebangsaan.' },
+      { id: 'twk-4', phase: 'FASE1_TWK', category: 'TWK', materialLabel: '4. Pilar NKRI', dateRange: 'Fase 1 • Tema 4', title: 'Tema 4: Pilar NKRI', bookRef: 'Al Faiz Hal. 66–89 (Teori, Soal & Pembahasan)', durationDays: 2, steps: [false, false, false, false, false, false, false], notes: 'Bhinneka Tunggal Ika, wawasan nusantara, dan keutuhan NKRI.' },
+      { id: 'twk-5', phase: 'FASE1_TWK', category: 'TWK', materialLabel: '5. Integritas', dateRange: 'Fase 1 • Tema 5', title: 'Tema 5: Integritas', bookRef: 'Al Faiz Hal. 90–111 (Teori, Soal & Pembahasan)', durationDays: 2, steps: [false, false, false, false, false, false, false], notes: '9 nilai antikorupsi KPK, kejujuran, dan etika penyelenggara negara.' },
+      { id: 'twk-6', phase: 'FASE1_TWK', category: 'TWK', materialLabel: '6. Bela Negara', dateRange: 'Fase 1 • Tema 6', title: 'Tema 6: Bela Negara', bookRef: 'Al Faiz Hal. 112–130 (Teori, Soal & Pembahasan)', durationDays: 2, steps: [false, false, false, false, false, false, false], notes: 'Nilai dasar bela negara & ancaman non-militer di era digital.' },
+      { id: 'twk-7', phase: 'FASE1_TWK', category: 'TWK', materialLabel: '7. Gagasan Utama', dateRange: 'Fase 1 • Tema 7', title: 'Tema 7: Gagasan Utama', bookRef: 'Al Faiz Hal. 131–152 (Teori, Soal & Pembahasan)', durationDays: 2, steps: [false, false, false, false, false, false, false], notes: 'Ide pokok paragraf deduktif, induktif, campuran, dan simpulan bacaan.' },
+      { id: 'twk-8', phase: 'FASE1_TWK', category: 'TWK', materialLabel: '8. Kalimat Efektif', dateRange: 'Fase 1 • Tema 8', title: 'Tema 8: Kalimat Efektif', bookRef: 'Al Faiz Hal. 153–171 (Teori, Soal & Pembahasan)', durationDays: 2, steps: [false, false, false, false, false, false, false], notes: 'PUEBI/EYD V, kehematan kata, kesejajaran bentuk, dan tanda baca.' },
 
       // FASE 2: TIU (Hal. 175 - 393)
-      { id: 'tiu-1', phase: 'FASE2_TIU', category: 'TIU', materialLabel: '1. Pecahan dan Desimal', dateRange: 'Fase 2 • Tema 1', title: 'Tema 1: Pecahan dan Desimal', bookRef: 'Al Faiz Hal. 176–186 (Teori, Soal & Pembahasan)', durationDays: 2, steps: [false, false, false, false, false, false], notes: 'Pecahan istimewa (1/8 = 12,5%, 1/6 = 16,67%, 3/8 = 37,5%) & hitung cepat.' },
-      { id: 'tiu-2', phase: 'FASE2_TIU', category: 'TIU', materialLabel: '2. Hubungan X dan Y', dateRange: 'Fase 2 • Tema 2', title: 'Tema 2: Hubungan X dan Y', bookRef: 'Al Faiz Hal. 187–202 (Teori, Soal & Pembahasan)', durationDays: 2, steps: [false, false, false, false, false, false], notes: 'Perbandingan kuantitatif X vs Y, aljabar cepat, dan uji nilai negatif/pecahan.' },
-      { id: 'tiu-3', phase: 'FASE2_TIU', category: 'TIU', materialLabel: '3. Analogi Kata dan Kalimat', dateRange: 'Fase 2 • Tema 3', title: 'Tema 3: Analogi Kata dan Kalimat', bookRef: 'Al Faiz Hal. 203–235 (Teori, Soal & Pembahasan)', durationDays: 2, steps: [false, false, false, false, false, false], notes: 'Padanan hubungan kata dan kesetaraan struktur kalimat SPOK.' },
-      { id: 'tiu-4', phase: 'FASE2_TIU', category: 'TIU', materialLabel: '4. Pola Kalimat', dateRange: 'Fase 2 • Tema 4', title: 'Tema 4: Pola Kalimat', bookRef: 'Al Faiz Hal. 236–248 (Teori, Soal & Pembahasan)', durationDays: 2, steps: [false, false, false, false, false, false], notes: 'Identifikasi S-P-O-K-Pel dan perluasan klausa.' },
-      { id: 'tiu-5', phase: 'FASE2_TIU', category: 'TIU', materialLabel: '5. Silogisme', dateRange: 'Fase 2 • Tema 5', title: 'Tema 5: Silogisme', bookRef: 'Al Faiz Hal. 249–274 (Teori, Soal & Pembahasan)', durationDays: 2, steps: [false, false, false, false, false, false], notes: 'Modus Ponens, Tollens, Silogisme Berantai, Kuantor Semua/Sebagian & Jebakan TDDS.' },
-      { id: 'tiu-6', phase: 'FASE2_TIU', category: 'TIU', materialLabel: '6. Pola Bilangan', dateRange: 'Fase 2 • Tema 6', title: 'Tema 6: Pola Bilangan', bookRef: 'Al Faiz Hal. 275–289 (Teori, Soal & Pembahasan)', durationDays: 2, steps: [false, false, false, false, false, false], notes: 'Deret 1 larik, 2 larik, lompat, Fibonacci, dan deret bertingkat.' },
-      { id: 'tiu-7', phase: 'FASE2_TIU', category: 'TIU', materialLabel: '7. Perbandingan Senilai dan Tak Senilai', dateRange: 'Fase 2 • Tema 7', title: 'Tema 7: Perbandingan Senilai & Tak Senilai', bookRef: 'Al Faiz Hal. 290–313 (Teori, Soal & Pembahasan)', durationDays: 2, steps: [false, false, false, false, false, false], notes: 'Proyek terhenti, pekerja tambahan, dan rumus gabungan S-O-W.' },
-      { id: 'tiu-8', phase: 'FASE2_TIU', category: 'TIU', materialLabel: '8. Figural 9 Kotak', dateRange: 'Fase 2 • Tema 8', title: 'Tema 8: Figural 9 Kotak', bookRef: 'Al Faiz Hal. 314–337 (Teori, Soal & Pembahasan)', durationDays: 2, steps: [false, false, false, false, false, false], notes: 'Pola baris/kolom matriks 3x3, penggabungan gambar, dan eliminasi elemen.' },
-      { id: 'tiu-9', phase: 'FASE2_TIU', category: 'TIU', materialLabel: '9. Figural', dateRange: 'Fase 2 • Tema 9', title: 'Tema 9: Figural (Analogi, Ketidaksamaan & Serial)', bookRef: 'Al Faiz Hal. 338–358 (Teori, Soal & Pembahasan)', durationDays: 2, steps: [false, false, false, false, false, false], notes: 'Rotasi 45°/90°, pencerminan, dan perubahan jumlah sisi/arsiran.' },
-      { id: 'tiu-10', phase: 'FASE2_TIU', category: 'TIU', materialLabel: '10. Penalaran Analitis', dateRange: 'Fase 2 • Tema 10', title: 'Tema 10: Penalaran Analitis', bookRef: 'Al Faiz Hal. 359–383 (Teori, Soal & Pembahasan)', durationDays: 2, steps: [false, false, false, false, false, false], notes: 'Urutan peringkat, posisi duduk melingkar/sejajar, dan jadwal bersyarat.' },
-      { id: 'tiu-11', phase: 'FASE2_TIU', category: 'TIU', materialLabel: '11. Tabel', dateRange: 'Fase 2 • Tema 11', title: 'Tema 11: Tabel (Interpretasi Data)', bookRef: 'Al Faiz Hal. 384–393 (Teori, Soal & Pembahasan)', durationDays: 2, steps: [false, false, false, false, false, false], notes: 'Perbandingan persentase cepat, rata-rata, dan ketelitian membaca baris/kolom.' },
+      { id: 'tiu-1', phase: 'FASE2_TIU', category: 'TIU', materialLabel: '1. Pecahan dan Desimal', dateRange: 'Fase 2 • Tema 1', title: 'Tema 1: Pecahan dan Desimal', bookRef: 'Al Faiz Hal. 176–186 (Teori, Soal & Pembahasan)', durationDays: 2, steps: [false, false, false, false, false, false, false], notes: 'Pecahan istimewa (1/8 = 12,5%, 1/6 = 16,67%, 3/8 = 37,5%) & hitung cepat.' },
+      { id: 'tiu-2', phase: 'FASE2_TIU', category: 'TIU', materialLabel: '2. Hubungan X dan Y', dateRange: 'Fase 2 • Tema 2', title: 'Tema 2: Hubungan X dan Y', bookRef: 'Al Faiz Hal. 187–202 (Teori, Soal & Pembahasan)', durationDays: 2, steps: [false, false, false, false, false, false, false], notes: 'Perbandingan kuantitatif X vs Y, aljabar cepat, dan uji nilai negatif/pecahan.' },
+      { id: 'tiu-3', phase: 'FASE2_TIU', category: 'TIU', materialLabel: '3. Analogi Kata dan Kalimat', dateRange: 'Fase 2 • Tema 3', title: 'Tema 3: Analogi Kata dan Kalimat', bookRef: 'Al Faiz Hal. 203–235 (Teori, Soal & Pembahasan)', durationDays: 2, steps: [false, false, false, false, false, false, false], notes: 'Padanan hubungan kata dan kesetaraan struktur kalimat SPOK.' },
+      { id: 'tiu-4', phase: 'FASE2_TIU', category: 'TIU', materialLabel: '4. Pola Kalimat', dateRange: 'Fase 2 • Tema 4', title: 'Tema 4: Pola Kalimat', bookRef: 'Al Faiz Hal. 236–248 (Teori, Soal & Pembahasan)', durationDays: 2, steps: [false, false, false, false, false, false, false], notes: 'Identifikasi S-P-O-K-Pel dan perluasan klausa.' },
+      { id: 'tiu-5', phase: 'FASE2_TIU', category: 'TIU', materialLabel: '5. Silogisme', dateRange: 'Fase 2 • Tema 5', title: 'Tema 5: Silogisme', bookRef: 'Al Faiz Hal. 249–274 (Teori, Soal & Pembahasan)', durationDays: 2, steps: [false, false, false, false, false, false, false], notes: 'Modus Ponens, Tollens, Silogisme Berantai, Kuantor Semua/Sebagian & Jebakan TDDS.' },
+      { id: 'tiu-6', phase: 'FASE2_TIU', category: 'TIU', materialLabel: '6. Pola Bilangan', dateRange: 'Fase 2 • Tema 6', title: 'Tema 6: Pola Bilangan', bookRef: 'Al Faiz Hal. 275–289 (Teori, Soal & Pembahasan)', durationDays: 2, steps: [false, false, false, false, false, false, false], notes: 'Deret 1 larik, 2 larik, lompat, Fibonacci, dan deret bertingkat.' },
+      { id: 'tiu-7', phase: 'FASE2_TIU', category: 'TIU', materialLabel: '7. Perbandingan Senilai dan Tak Senilai', dateRange: 'Fase 2 • Tema 7', title: 'Tema 7: Perbandingan Senilai & Tak Senilai', bookRef: 'Al Faiz Hal. 290–313 (Teori, Soal & Pembahasan)', durationDays: 2, steps: [false, false, false, false, false, false, false], notes: 'Proyek terhenti, pekerja tambahan, dan rumus gabungan S-O-W.' },
+      { id: 'tiu-8', phase: 'FASE2_TIU', category: 'TIU', materialLabel: '8. Figural 9 Kotak', dateRange: 'Fase 2 • Tema 8', title: 'Tema 8: Figural 9 Kotak', bookRef: 'Al Faiz Hal. 314–337 (Teori, Soal & Pembahasan)', durationDays: 2, steps: [false, false, false, false, false, false, false], notes: 'Pola baris/kolom matriks 3x3, penggabungan gambar, dan eliminasi elemen.' },
+      { id: 'tiu-9', phase: 'FASE2_TIU', category: 'TIU', materialLabel: '9. Figural', dateRange: 'Fase 2 • Tema 9', title: 'Tema 9: Figural (Analogi, Ketidaksamaan & Serial)', bookRef: 'Al Faiz Hal. 338–358 (Teori, Soal & Pembahasan)', durationDays: 2, steps: [false, false, false, false, false, false, false], notes: 'Rotasi 45°/90°, pencerminan, dan perubahan jumlah sisi/arsiran.' },
+      { id: 'tiu-10', phase: 'FASE2_TIU', category: 'TIU', materialLabel: '10. Penalaran Analitis', dateRange: 'Fase 2 • Tema 10', title: 'Tema 10: Penalaran Analitis', bookRef: 'Al Faiz Hal. 359–383 (Teori, Soal & Pembahasan)', durationDays: 2, steps: [false, false, false, false, false, false, false], notes: 'Urutan peringkat, posisi duduk melingkar/sejajar, dan jadwal bersyarat.' },
+      { id: 'tiu-11', phase: 'FASE2_TIU', category: 'TIU', materialLabel: '11. Tabel', dateRange: 'Fase 2 • Tema 11', title: 'Tema 11: Tabel (Interpretasi Data)', bookRef: 'Al Faiz Hal. 384–393 (Teori, Soal & Pembahasan)', durationDays: 2, steps: [false, false, false, false, false, false, false], notes: 'Perbandingan persentase cepat, rata-rata, dan ketelitian membaca baris/kolom.' },
 
       // FASE 3: TKP (Hal. 401 - 496) & TRY OUT AKHIR
-      { id: 'tkp-1', phase: 'FASE3_TKP', category: 'TKP', materialLabel: '1. Pelayanan Publik', dateRange: 'Fase 3 • Tema 1', title: 'Tema 1: Pelayanan Publik', bookRef: 'Al Faiz Hal. 402–420 (Teori, Soal & Pembahasan)', durationDays: 2, steps: [false, false, false, false, false, false], notes: 'Pilih opsi yang paling solutif, ramah, cepat, dan sesuai SOP bagi masyarakat.' },
-      { id: 'tkp-2', phase: 'FASE3_TKP', category: 'TKP', materialLabel: '2. Profesionalisme', dateRange: 'Fase 3 • Tema 2', title: 'Tema 2: Profesionalisme', bookRef: 'Al Faiz Hal. 421–438 (Teori, Soal & Pembahasan)', durationDays: 2, steps: [false, false, false, false, false, false], notes: 'Tanggung jawab penuh pada tugas utama di tengah gangguan atau konflik.' },
-      { id: 'tkp-3', phase: 'FASE3_TKP', category: 'TKP', materialLabel: '3. Jejaring Kerja', dateRange: 'Fase 3 • Tema 3', title: 'Tema 3: Jejaring Kerja', bookRef: 'Al Faiz Hal. 439–454 (Teori, Soal & Pembahasan)', durationDays: 2, steps: [false, false, false, false, false, false], notes: 'Kolaborasi lintas unit, membuka relasi positif, dan berbagi informasi kerja.' },
-      { id: 'tkp-4', phase: 'FASE3_TKP', category: 'TKP', materialLabel: '4. Teknologi Informasi dan Komunikasi', dateRange: 'Fase 3 • Tema 4', title: 'Tema 4: Teknologi Informasi & Komunikasi', bookRef: 'Al Faiz Hal. 455–470 (Teori, Soal & Pembahasan)', durationDays: 2, steps: [false, false, false, false, false, false], notes: 'Adaptif terhadap sistem digital baru dan menjaga keamanan data instansi.' },
-      { id: 'tkp-5', phase: 'FASE3_TKP', category: 'TKP', materialLabel: '5. Sosial Budaya', dateRange: 'Fase 3 • Tema 5', title: 'Tema 5: Sosial Budaya', bookRef: 'Al Faiz Hal. 471–488 (Teori, Soal & Pembahasan)', durationDays: 2, steps: [false, false, false, false, false, false], notes: 'Menghargai keragaman adat, empati sosial, dan berbaur dengan masyarakat.' },
-      { id: 'tkp-6', phase: 'FASE3_TKP', category: 'TKP', materialLabel: '6. Anti Radikalisme', dateRange: 'Fase 3 • Tema 6', title: 'Tema 6: Anti Radikalisme', bookRef: 'Al Faiz Hal. 489–496 (Teori, Soal & Pembahasan)', durationDays: 2, steps: [false, false, false, false, false, false], notes: 'Deteksi dini paham intoleran, tabayyun/klarifikasi, dan lapor pimpinan.' },
-      { id: 'to-akhir', phase: 'FASE3_TKP', category: 'TO', materialLabel: '1. Pelayanan Publik', dateRange: 'Konsolidasi Akhir', title: 'Simulasi Try Out CAT Full 110 Soal & Evaluasi Total', bookRef: 'Try Out Website / Al Faiz (100 Menit)', durationDays: 2, steps: [false, false, false, false, false, false], notes: 'Uji manajemen waktu 100 menit & pastikan skor menembus ≥ 400.' }
+      { id: 'tkp-1', phase: 'FASE3_TKP', category: 'TKP', materialLabel: '1. Pelayanan Publik', dateRange: 'Fase 3 • Tema 1', title: 'Tema 1: Pelayanan Publik', bookRef: 'Al Faiz Hal. 402–420 (Teori, Soal & Pembahasan)', durationDays: 2, steps: [false, false, false, false, false, false, false], notes: 'Pilih opsi yang paling solutif, ramah, cepat, dan sesuai SOP bagi masyarakat.' },
+      { id: 'tkp-2', phase: 'FASE3_TKP', category: 'TKP', materialLabel: '2. Profesionalisme', dateRange: 'Fase 3 • Tema 2', title: 'Tema 2: Profesionalisme', bookRef: 'Al Faiz Hal. 421–438 (Teori, Soal & Pembahasan)', durationDays: 2, steps: [false, false, false, false, false, false, false], notes: 'Tanggung jawab penuh pada tugas utama di tengah gangguan atau konflik.' },
+      { id: 'tkp-3', phase: 'FASE3_TKP', category: 'TKP', materialLabel: '3. Jejaring Kerja', dateRange: 'Fase 3 • Tema 3', title: 'Tema 3: Jejaring Kerja', bookRef: 'Al Faiz Hal. 439–454 (Teori, Soal & Pembahasan)', durationDays: 2, steps: [false, false, false, false, false, false, false], notes: 'Kolaborasi lintas unit, membuka relasi positif, dan berbagi informasi kerja.' },
+      { id: 'tkp-4', phase: 'FASE3_TKP', category: 'TKP', materialLabel: '4. Teknologi Informasi dan Komunikasi', dateRange: 'Fase 3 • Tema 4', title: 'Tema 4: Teknologi Informasi & Komunikasi', bookRef: 'Al Faiz Hal. 455–470 (Teori, Soal & Pembahasan)', durationDays: 2, steps: [false, false, false, false, false, false, false], notes: 'Adaptif terhadap sistem digital baru dan menjaga keamanan data instansi.' },
+      { id: 'tkp-5', phase: 'FASE3_TKP', category: 'TKP', materialLabel: '5. Sosial Budaya', dateRange: 'Fase 3 • Tema 5', title: 'Tema 5: Sosial Budaya', bookRef: 'Al Faiz Hal. 471–488 (Teori, Soal & Pembahasan)', durationDays: 2, steps: [false, false, false, false, false, false, false], notes: 'Menghargai keragaman adat, empati sosial, dan berbaur dengan masyarakat.' },
+      { id: 'tkp-6', phase: 'FASE3_TKP', category: 'TKP', materialLabel: '6. Anti Radikalisme', dateRange: 'Fase 3 • Tema 6', title: 'Tema 6: Anti Radikalisme', bookRef: 'Al Faiz Hal. 489–496 (Teori, Soal & Pembahasan)', durationDays: 2, steps: [false, false, false, false, false, false, false], notes: 'Deteksi dini paham intoleran, tabayyun/klarifikasi, dan lapor pimpinan.' },
+      { id: 'to-akhir', phase: 'FASE3_TKP', category: 'TO', materialLabel: '1. Pelayanan Publik', dateRange: 'Konsolidasi Akhir', title: 'Simulasi Try Out CAT Full 110 Soal & Evaluasi Total', bookRef: 'Try Out Website / Al Faiz (100 Menit)', durationDays: 2, steps: [false, false, false, false, false, false, false], notes: 'Uji manajemen waktu 100 menit & pastikan skor menembus ≥ 400.' }
     ];
 
     const INITIAL_ERROR_LOGS = [];
@@ -2132,12 +2124,60 @@
       },
       modules: JSON.parse(JSON.stringify(INITIAL_MODULES)),
       dailyLogs: {}, // { 'YYYY-MM-DD': { minutes: number, completed: boolean } }
+      offSchedule: {
+        recurringDays: [0], // 0 = Minggu default Off, user dapat menambah/mengubah (misal Jumat = 5)
+        customDates: []     // ['YYYY-MM-DD', ...]
+      },
       errorLogs: [],
       flashcards: [],
       trackerFilterPhase: 'ALL',
       trackerFilterStatus: 'ALL',
       timerModeMinutes: 30
     };
+
+    function normalizeModuleSteps(stepsArr) {
+      if (!Array.isArray(stepsArr)) return [false, false, false, false, false, false, false];
+      if (stepsArr.length === 7) return stepsArr.map(Boolean);
+      if (stepsArr.length === 6) {
+        // Migrate legacy 6-step module to 7-step module seamlessly
+        const allSix = stepsArr.every(Boolean);
+        return [
+          Boolean(stepsArr[0]),
+          Boolean(stepsArr[1]),
+          Boolean(stepsArr[2]),
+          Boolean(stepsArr[3]),
+          Boolean(stepsArr[4]),
+          allSix,
+          allSix
+        ];
+      }
+      const padded = [false, false, false, false, false, false, false];
+      for (let i = 0; i < Math.min(7, stepsArr.length); i++) {
+        padded[i] = Boolean(stepsArr[i]);
+      }
+      return padded;
+    }
+
+    function normalizeModulesList(mods) {
+      if (!Array.isArray(mods) || mods.length === 0) return JSON.parse(JSON.stringify(INITIAL_MODULES));
+      return mods.map(m => ({
+        ...m,
+        steps: normalizeModuleSteps(m.steps)
+      }));
+    }
+
+    function normalizeOffSchedule(offObj) {
+      if (!offObj || typeof offObj !== 'object') {
+        return { recurringDays: [0], customDates: [] };
+      }
+      const rec = Array.isArray(offObj.recurringDays)
+        ? Array.from(new Set(offObj.recurringDays.map(Number).filter(n => n >= 0 && n <= 6)))
+        : [0];
+      const dates = Array.isArray(offObj.customDates)
+        ? Array.from(new Set(offObj.customDates.filter(d => typeof d === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(d)))).sort()
+        : [];
+      return { recurringDays: rec, customDates: dates };
+    }
 
     window.getLocalProfileUsername = function() {
       return (appState.profile && appState.profile.localUsername) || '';
@@ -2164,8 +2204,9 @@
           photoDataUrl: (incomingState.profile && incomingState.profile.photoDataUrl) || '',
           localUsername: (incomingState.profile && incomingState.profile.localUsername) || ''
         },
-        modules: Array.isArray(incomingState.modules) && incomingState.modules.length > 0 ? incomingState.modules : appState.modules,
+        modules: normalizeModulesList(incomingState.modules),
         dailyLogs: incomingState.dailyLogs || {},
+        offSchedule: normalizeOffSchedule(incomingState.offSchedule),
         errorLogs: Array.isArray(incomingState.errorLogs) ? incomingState.errorLogs : [],
         flashcards: Array.isArray(incomingState.flashcards) ? incomingState.flashcards : [],
         timerModeMinutes: [30, 60, 90, 120].includes(Number(incomingState.timerModeMinutes)) ? Number(incomingState.timerModeMinutes) : 30
@@ -2196,6 +2237,55 @@
       filterFlashcards();
     };
 
+    // =========================================================================
+    // STRICT SCROLL & BACKGROUND INTERACTION LOCK WHILE AUTH GATE IS ACTIVE
+    // =========================================================================
+    let isAuthGateLocked = true;
+
+    function handleGlobalLockScrollEvent(e) {
+      if (!isAuthGateLocked) return;
+      const overlay = document.getElementById('authGateOverlay');
+      if (!overlay || overlay.classList.contains('hidden')) return;
+      if (!overlay.contains(e.target)) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+    }
+
+    function handleGlobalLockKeydown(e) {
+      if (!isAuthGateLocked) return;
+      const overlay = document.getElementById('authGateOverlay');
+      if (!overlay || overlay.classList.contains('hidden')) return;
+      const blockedKeys = ['ArrowUp', 'ArrowDown', 'PageUp', 'PageDown', 'Home', 'End', ' '];
+      const tag = e.target && e.target.tagName;
+      if (tag !== 'INPUT' && tag !== 'TEXTAREA' && blockedKeys.includes(e.key)) {
+        e.preventDefault();
+      }
+    }
+
+    document.addEventListener('wheel', handleGlobalLockScrollEvent, { passive: false });
+    document.addEventListener('touchmove', handleGlobalLockScrollEvent, { passive: false });
+    document.addEventListener('keydown', handleGlobalLockKeydown, { passive: false });
+
+    window.lockAppInterface = function() {
+      isAuthGateLocked = true;
+      document.documentElement.classList.add('auth-locked');
+      document.body.classList.add('auth-locked');
+      const overlay = document.getElementById('authGateOverlay');
+      if (overlay) {
+        overlay.classList.remove('hidden');
+        overlay.scrollTop = 0;
+      }
+    };
+
+    window.unlockAppInterface = function() {
+      isAuthGateLocked = false;
+      document.documentElement.classList.remove('auth-locked');
+      document.body.classList.remove('auth-locked');
+      const overlay = document.getElementById('authGateOverlay');
+      if (overlay) overlay.classList.add('hidden');
+    };
+
     // Calendar UI State
     let calViewYear = null;
     let calViewMonth = null;
@@ -2219,12 +2309,13 @@
     let pendingRestorePayload = null;
 
     const STEP_LABELS = [
-      '1. Teori',
-      '2. Tes 1',
-      '3. Eval 1',
-      '4. Tes 2',
-      '5. Eval 2',
-      '6. Mastered'
+      'Teori',
+      'Tes Soal 1',
+      'Evaluasi 1',
+      'Tes Soal 2',
+      'Evaluasi 2',
+      'Tes Soal 3',
+      'Evaluasi 3'
     ];
 
     function getTodayISO() {
@@ -2241,8 +2332,9 @@
           appState = {
             ...appState,
             ...parsed,
-            modules: Array.isArray(parsed.modules) && parsed.modules.length > 0 ? parsed.modules : appState.modules,
+            modules: normalizeModulesList(parsed.modules),
             dailyLogs: parsed.dailyLogs || {},
+            offSchedule: normalizeOffSchedule(parsed.offSchedule),
             errorLogs: Array.isArray(parsed.errorLogs) ? parsed.errorLogs : [],
             flashcards: Array.isArray(parsed.flashcards) ? parsed.flashcards : [],
             timerModeMinutes: [30, 60, 90, 120].includes(Number(parsed.timerModeMinutes)) ? Number(parsed.timerModeMinutes) : 30
@@ -2325,34 +2417,44 @@
     }
 
     // =========================================================================
-    // 3B. PROFILE AVATAR, PHOTO UPLOAD (MAX 3MB) & CREDENTIAL SETTINGS
+    // 3B. PROFILE AVATAR, PHOTO UPLOAD (<= 3MB) & CREDENTIALS MANAGEMENT
     // =========================================================================
     function renderProfileAvatarUI() {
-      const prof = appState.profile || { icon: '🧑‍🎓', photoDataUrl: '' };
+      const prof = appState.profile || { icon: '🧑‍🎓', photoDataUrl: '', localUsername: '' };
+      const iconChar = prof.icon || '🧑‍🎓';
+      const photoUrl = prof.photoDataUrl || '';
+
       const headerImg = document.getElementById('headerProfileImg');
       const headerIcon = document.getElementById('headerProfileIcon');
       const modalImg = document.getElementById('modalProfilePreviewImg');
       const modalIcon = document.getElementById('modalProfilePreviewIcon');
 
-      if (prof.photoDataUrl) {
+      if (photoUrl) {
         if (headerImg) {
-          headerImg.src = prof.photoDataUrl;
+          headerImg.src = photoUrl;
           headerImg.classList.remove('hidden');
         }
         if (headerIcon) headerIcon.classList.add('hidden');
+
         if (modalImg) {
-          modalImg.src = prof.photoDataUrl;
+          modalImg.src = photoUrl;
           modalImg.classList.remove('hidden');
         }
         if (modalIcon) modalIcon.classList.add('hidden');
       } else {
-        const iconChar = prof.icon || '🧑‍🎓';
-        if (headerImg) headerImg.classList.add('hidden');
+        if (headerImg) {
+          headerImg.src = '';
+          headerImg.classList.add('hidden');
+        }
         if (headerIcon) {
           headerIcon.textContent = iconChar;
           headerIcon.classList.remove('hidden');
         }
-        if (modalImg) modalImg.classList.add('hidden');
+
+        if (modalImg) {
+          modalImg.src = '';
+          modalImg.classList.add('hidden');
+        }
         if (modalIcon) {
           modalIcon.textContent = iconChar;
           modalIcon.classList.remove('hidden');
@@ -2360,51 +2462,54 @@
       }
     }
 
+    function showProfileModalAlert(message, isError = true) {
+      const box = document.getElementById('profileModalAlert');
+      if (!box) return;
+      box.textContent = message;
+      box.className = isError
+        ? 'p-3 rounded-xl text-xs font-semibold bg-rose-50 border border-rose-200 text-rose-700'
+        : 'p-3 rounded-xl text-xs font-semibold bg-emerald-50 border border-emerald-200 text-emerald-800';
+      box.classList.remove('hidden');
+    }
+
     function openProfileSettingsModal() {
+      renderProfileAvatarUI();
       const alertBox = document.getElementById('profileModalAlert');
       if (alertBox) alertBox.classList.add('hidden');
 
-      const info = window.getActiveAccountInfo ? window.getActiveAccountInfo() : { isCloud: false, username: '' };
+      const accInfo = typeof window.getActiveAccountInfo === 'function'
+        ? window.getActiveAccountInfo()
+        : { isCloud: false, username: window.getLocalProfileUsername() };
+
       const subEl = document.getElementById('profileModalAccountSubtitle');
       const credForm = document.getElementById('profileCredentialsForm');
-      const userInput = document.getElementById('profEditUsername');
-      const passInput = document.getElementById('profEditPassword');
+      const unameInput = document.getElementById('profEditUsername');
+      const pwdInput = document.getElementById('profEditPassword');
       const recInput = document.getElementById('profEditRecoveryCode');
 
-      if (subEl) {
-        subEl.textContent = info.isCloud
-          ? `Terhubung sebagai @${info.username} (Cloud Account)`
-          : 'Mode Lokal — Atur foto profil atau cadangkan progres';
-      }
-      if (credForm) {
-        credForm.classList.toggle('hidden', !info.isCloud);
-      }
-      if (userInput) userInput.value = info.username || '';
-      if (passInput) {
-        passInput.value = '';
-        passInput.disabled = !info.isCloud;
-        passInput.placeholder = 'Kosongkan jika tetap';
-      }
-      if (recInput) {
-        recInput.value = '';
-        recInput.disabled = !info.isCloud;
-        recInput.placeholder = 'Contoh: EL SAWITE';
+      if (pwdInput) pwdInput.value = '';
+      if (recInput) recInput.value = '';
+
+      if (accInfo && accInfo.isCloud) {
+        if (subEl) subEl.textContent = `Akun Cloud Aktif: @${accInfo.username} • Kelola foto profil & kredensial`;
+        if (credForm) credForm.classList.remove('hidden');
+        if (unameInput) unameInput.value = accInfo.username || '';
+      } else {
+        if (subEl) subEl.textContent = 'Mode Lokal • Sesuaikan ikon/foto profil & cadangan JSON';
+        if (credForm) credForm.classList.add('hidden');
+        if (unameInput) unameInput.value = '';
       }
 
-      if (typeof window.refreshAccountModeUI === 'function') {
-        window.refreshAccountModeUI();
-      }
-      renderProfileAvatarUI();
       openModal('profileSettingsModal');
     }
 
-    function selectPresetProfileIcon(iconStr) {
+    function selectPresetProfileIcon(emoji) {
       if (!appState.profile) appState.profile = { icon: '🧑‍🎓', photoDataUrl: '', localUsername: '' };
-      appState.profile.icon = iconStr;
+      appState.profile.icon = emoji;
       appState.profile.photoDataUrl = '';
-      saveState();
       renderProfileAvatarUI();
-      showToast(`Ikon profil diubah menjadi ${iconStr}`, '✨');
+      saveState();
+      showToast(`Ikon profil diubah menjadi ${emoji}`, '✨');
     }
 
     function resetProfilePhotoToDefaultIcon() {
@@ -2412,77 +2517,48 @@
     }
 
     function handleProfilePhotoUpload(event) {
-      const file = event.target.files[0];
-      const alertBox = document.getElementById('profileModalAlert');
-      if (alertBox) alertBox.classList.add('hidden');
+      const file = event.target.files && event.target.files[0];
       if (!file) return;
 
-      const MAX_BYTES = 3 * 1024 * 1024; // 3MB
-      if (file.size > MAX_BYTES) {
-        if (alertBox) {
-          alertBox.textContent = '⚠️ Ukuran foto melebihi batas maksimal 3 MB. Silakan pilih foto yang lebih kecil.';
-          alertBox.className = 'p-3 rounded-xl text-xs font-semibold bg-rose-50 border border-rose-200 text-rose-700';
-          alertBox.classList.remove('hidden');
-        }
+      const maxBytes = 3 * 1024 * 1024; // 3 MB
+      if (file.size > maxBytes) {
+        showProfileModalAlert('Ukuran foto melebihi batas maksimal 3 MB. Silakan pilih gambar yang lebih kecil.', true);
         event.target.value = '';
         return;
       }
 
       if (!file.type.startsWith('image/')) {
-        if (alertBox) {
-          alertBox.textContent = '⚠️ File harus berupa gambar (JPG, PNG, WebP, dll).';
-          alertBox.className = 'p-3 rounded-xl text-xs font-semibold bg-rose-50 border border-rose-200 text-rose-700';
-          alertBox.classList.remove('hidden');
-        }
+        showProfileModalAlert('File harus berupa gambar (JPG, PNG, WEBP).', true);
         event.target.value = '';
         return;
       }
 
       const reader = new FileReader();
-      reader.onload = function(e) {
-        const img = new Image();
-        img.onload = function() {
-          // Resize avatar cleanly to max 256x256 so Firestore & localStorage remain fast & lightweight
-          const canvas = document.createElement('canvas');
-          const maxDim = 256;
-          let w = img.width;
-          let h = img.height;
-          if (w > h && w > maxDim) {
-            h = Math.round((h * maxDim) / w);
-            w = maxDim;
-          } else if (h >= w && h > maxDim) {
-            w = Math.round((w * maxDim) / h);
-            h = maxDim;
-          }
-          canvas.width = w;
-          canvas.height = h;
-          const ctx = canvas.getContext('2d');
-          ctx.drawImage(img, 0, 0, w, h);
-          const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.85);
-
-          if (!appState.profile) appState.profile = { icon: '🧑‍🎓', photoDataUrl: '', localUsername: '' };
-          appState.profile.photoDataUrl = compressedDataUrl;
-          saveState();
-          renderProfileAvatarUI();
-          showToast('Foto profil berhasil diperbarui!', '📷');
-        };
-        img.src = e.target.result;
+      reader.onload = function(evt) {
+        if (!appState.profile) appState.profile = { icon: '🧑‍🎓', photoDataUrl: '', localUsername: '' };
+        appState.profile.photoDataUrl = evt.target.result;
+        renderProfileAvatarUI();
+        saveState();
+        showProfileModalAlert('Foto profil berhasil diperbarui!', false);
+        showToast('Foto profil berhasil diperbarui!', '📷');
+      };
+      reader.onerror = function() {
+        showProfileModalAlert('Gagal membaca file gambar.', true);
       };
       reader.readAsDataURL(file);
     }
 
     async function saveProfileCredentials(e) {
       e.preventDefault();
-      const alertBox = document.getElementById('profileModalAlert');
+      const newUsername = (document.getElementById('profEditUsername')?.value || '').trim();
+      const newPassword = document.getElementById('profEditPassword')?.value || '';
+      const newRecoveryCode = document.getElementById('profEditRecoveryCode')?.value || '';
       const btn = document.getElementById('btnSaveProfileChanges');
-      if (alertBox) alertBox.classList.add('hidden');
 
-      const newUsername = document.getElementById('profEditUsername').value.trim();
-      const newPassword = document.getElementById('profEditPassword').value;
-      const newRecoveryCode = document.getElementById('profEditRecoveryCode').value;
-
-      btn.disabled = true;
-      btn.textContent = 'Menyimpan...';
+      if (btn) {
+        btn.disabled = true;
+        btn.textContent = 'Menyimpan...';
+      }
 
       try {
         if (typeof window.updateCloudAccountCredentials === 'function') {
@@ -2491,34 +2567,40 @@
             newPassword,
             newRecoveryCode
           });
-          if (alertBox) {
-            alertBox.textContent = `✅ ${res.message}`;
-            alertBox.className = 'p-3 rounded-xl text-xs font-semibold bg-emerald-50 border border-emerald-200 text-emerald-800';
-            alertBox.classList.remove('hidden');
-          }
-          document.getElementById('profEditPassword').value = '';
-          document.getElementById('profEditRecoveryCode').value = '';
-          showToast(res.message, '✅');
+          showProfileModalAlert(res.message || 'Profil berhasil diperbarui!', false);
+          showToast(res.message || 'Profil berhasil diperbarui!', '✅');
+        } else {
+          window.setLocalProfileUsername(newUsername);
+          if (typeof window.refreshAccountModeUI === 'function') window.refreshAccountModeUI();
+          showProfileModalAlert('Nama profil lokal berhasil disimpan!', false);
         }
+        const pwdInput = document.getElementById('profEditPassword');
+        const recInput = document.getElementById('profEditRecoveryCode');
+        if (pwdInput) pwdInput.value = '';
+        if (recInput) recInput.value = '';
       } catch (err) {
-        if (alertBox) {
-          alertBox.textContent = `⚠️ ${err.message}`;
-          alertBox.className = 'p-3 rounded-xl text-xs font-semibold bg-rose-50 border border-rose-200 text-rose-700';
-          alertBox.classList.remove('hidden');
-        }
+        showProfileModalAlert(err.message || 'Gagal menyimpan perubahan profil.', true);
       } finally {
-        btn.disabled = false;
-        btn.textContent = 'Simpan Perubahan Profil & Keamanan';
+        if (btn) {
+          btn.disabled = false;
+          btn.textContent = 'Simpan Perubahan Profil & Keamanan';
+        }
       }
     }
 
     // =========================================================================
-    // 4. DATE, TARGET & STREAK ENGINE
+    // 4. DATE, OFF SCHEDULE, TARGET & STREAK ENGINE
     // =========================================================================
-    function getTargetMinutesForDate(isoDateStr) {
+    function isDateScheduledOff(isoDateStr) {
+      const offCfg = normalizeOffSchedule(appState.offSchedule);
+      if (offCfg.customDates.includes(isoDateStr)) return true;
       const [y, m, d] = isoDateStr.split('-').map(Number);
-      const dayOfWeek = new Date(y, m - 1, d).getDay(); // 0 = Sunday
-      if (dayOfWeek === 0) return 0; // Minggu Off
+      const dayOfWeek = new Date(y, m - 1, d).getDay(); // 0 = Sunday ... 6 = Saturday
+      return offCfg.recurringDays.includes(dayOfWeek);
+    }
+
+    function getTargetMinutesForDate(isoDateStr) {
+      if (isDateScheduledOff(isoDateStr)) return 0;
       return Number(appState.timerModeMinutes) || 30;
     }
 
@@ -2539,16 +2621,20 @@
       for (let i = 0; i < 365; i++) {
         const tzOffset = cursor.getTimezoneOffset() * 60000;
         const iso = new Date(cursor - tzOffset).toISOString().split('T')[0];
-        const dayOfWeek = cursor.getDay();
+        const isOff = isDateScheduledOff(iso);
         const log = appState.dailyLogs[iso];
         const target = getTargetMinutesForDate(iso);
 
-        if (dayOfWeek === 0) {
+        if (isOff) {
+          // Hari Off (rutin maupun tanggal spesifik) tidak memutus streak; jika dikerjakan tetap dihitung bonus
+          if (log && (log.completed || log.minutes > 0)) {
+            streak++;
+          }
           cursor.setDate(cursor.getDate() - 1);
           continue;
         }
 
-        const isDone = log && (log.completed || log.minutes >= target);
+        const isDone = log && (log.completed || (target > 0 && log.minutes >= target));
         if (isDone) {
           streak++;
         } else {
@@ -2561,6 +2647,104 @@
         cursor.setDate(cursor.getDate() - 1);
       }
       return streak;
+    }
+
+    // Off Days Modal Controls
+    function openOffDaysModal() {
+      appState.offSchedule = normalizeOffSchedule(appState.offSchedule);
+      const dateInput = document.getElementById('customOffDateInput');
+      if (dateInput) dateInput.value = getTodayISO();
+      renderOffDaysModalContent();
+      openModal('offDaysSettingsModal');
+    }
+
+    function toggleRecurringOffDay(dayIndex) {
+      appState.offSchedule = normalizeOffSchedule(appState.offSchedule);
+      const idx = appState.offSchedule.recurringDays.indexOf(dayIndex);
+      if (idx >= 0) {
+        appState.offSchedule.recurringDays.splice(idx, 1);
+      } else {
+        appState.offSchedule.recurringDays.push(dayIndex);
+        appState.offSchedule.recurringDays.sort((a, b) => a - b);
+      }
+      saveState();
+      renderOffDaysModalContent();
+      updateHeaderDashboard();
+      showToast('Jadwal hari Off rutin diperbarui!', '📅');
+    }
+
+    function addCustomOffDate() {
+      const input = document.getElementById('customOffDateInput');
+      const val = input ? input.value : '';
+      if (!val) return;
+      appState.offSchedule = normalizeOffSchedule(appState.offSchedule);
+      if (!appState.offSchedule.customDates.includes(val)) {
+        appState.offSchedule.customDates.push(val);
+        appState.offSchedule.customDates.sort();
+        saveState();
+        renderOffDaysModalContent();
+        updateHeaderDashboard();
+        showToast(`${formatIndonesianDate(val)} ditandai sebagai Hari Off!`, '🛑');
+      } else {
+        showToast('Tanggal tersebut sudah terdaftar sebagai Hari Off.', 'ℹ️');
+      }
+    }
+
+    function removeCustomOffDate(isoDate) {
+      appState.offSchedule = normalizeOffSchedule(appState.offSchedule);
+      appState.offSchedule.customDates = appState.offSchedule.customDates.filter(d => d !== isoDate);
+      saveState();
+      renderOffDaysModalContent();
+      updateHeaderDashboard();
+      showToast(`Status Off pada ${formatIndonesianDate(isoDate)} dihapus.`, '✅');
+    }
+
+    function renderOffDaysModalContent() {
+      const weekGrid = document.getElementById('recurringOffWeekdaysGrid');
+      const listEl = document.getElementById('customOffDatesList');
+      const offCfg = normalizeOffSchedule(appState.offSchedule);
+
+      const orderedDays = [
+        { idx: 1, label: 'Senin', short: 'SEN' },
+        { idx: 2, label: 'Selasa', short: 'SEL' },
+        { idx: 3, label: 'Rabu', short: 'RAB' },
+        { idx: 4, label: 'Kamis', short: 'KAM' },
+        { idx: 5, label: 'Jumat', short: 'JUM' },
+        { idx: 6, label: 'Sabtu', short: 'SAB' },
+        { idx: 0, label: 'Minggu', short: 'MIN' }
+      ];
+
+      if (weekGrid) {
+        weekGrid.innerHTML = orderedDays.map(d => {
+          const active = offCfg.recurringDays.includes(d.idx);
+          return `
+            <button
+              type="button"
+              onclick="toggleRecurringOffDay(${d.idx})"
+              class="px-2 py-2 rounded-xl border text-xs font-extrabold transition flex flex-col items-center gap-0.5
+              ${active
+                ? 'bg-rose-600 border-rose-600 text-white shadow-sm'
+                : 'bg-white border-slate-200 text-slate-700 hover:border-rose-300'}"
+            >
+              <span>${d.short}</span>
+              <span class="text-[9px] font-semibold">${active ? 'OFF' : 'Aktif'}</span>
+            </button>
+          `;
+        }).join('');
+      }
+
+      if (listEl) {
+        if (offCfg.customDates.length === 0) {
+          listEl.innerHTML = `<span class="text-[11px] text-slate-400 italic">Belum ada tanggal Off spesifik yang ditambahkan.</span>`;
+        } else {
+          listEl.innerHTML = offCfg.customDates.map(iso => `
+            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-rose-100 text-rose-800 border border-rose-200 text-[11px] font-bold">
+              <span>${formatIndonesianDate(iso)}</span>
+              <button type="button" onclick="removeCustomOffDate('${iso}')" title="Hapus" class="hover:text-rose-950 font-extrabold">✕</button>
+            </span>
+          `).join('');
+        }
+      }
     }
 
     // =========================================================================
@@ -2584,8 +2768,8 @@
 
       if (dayTypeBadge) {
         if (targetMin === 0) {
-          dayTypeBadge.textContent = 'Minggu (Off)';
-          dayTypeBadge.className = 'text-[10px] font-bold px-2 py-0.5 rounded bg-purple-500/30 text-purple-200';
+          dayTypeBadge.textContent = 'Jadwal Off (0m)';
+          dayTypeBadge.className = 'text-[10px] font-bold px-2 py-0.5 rounded bg-rose-500/30 text-rose-200';
         } else {
           dayTypeBadge.textContent = `Target ${targetMin}m`;
           dayTypeBadge.className = 'text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-500/30 text-emerald-200';
@@ -2595,8 +2779,8 @@
       const isCompleted = log.completed || (targetMin > 0 && log.minutes >= targetMin);
       if (statusBadge && btnCheckIn) {
         if (targetMin === 0 && !log.completed && log.minutes === 0) {
-          statusBadge.textContent = 'Hari Istirahat (Off)';
-          statusBadge.className = 'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold bg-purple-500/20 text-purple-200 border border-purple-400/30';
+          statusBadge.textContent = 'Hari Libur (Off)';
+          statusBadge.className = 'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold bg-rose-500/20 text-rose-200 border border-rose-400/30';
           btnCheckIn.textContent = 'Bonus Belajar ✓';
         } else if (isCompleted) {
           statusBadge.textContent = 'Target Tercapai ✓';
@@ -2617,12 +2801,12 @@
       const todayTgtEl = document.getElementById('todayTargetText');
       const todayBarEl = document.getElementById('todayProgressBar');
       if (todayMinEl) todayMinEl.textContent = log.minutes;
-      if (todayTgtEl) todayTgtEl.textContent = targetMin === 0 ? '/ Libur (Opsional)' : `/ ${targetMin} menit`;
+      if (todayTgtEl) todayTgtEl.textContent = targetMin === 0 ? '/ Libur Off (Opsional)' : `/ ${targetMin} menit`;
       const pctToday = targetMin === 0 ? (log.minutes > 0 ? 100 : 0) : Math.min(100, Math.round((log.minutes / targetMin) * 100));
       if (todayBarEl) todayBarEl.style.width = `${pctToday}%`;
 
       const totalMods = appState.modules.length;
-      const masteredMods = appState.modules.filter(m => m.steps.every(Boolean)).length;
+      const masteredMods = appState.modules.filter(m => m.steps.length === 7 && m.steps.every(Boolean)).length;
       const pctMastery = totalMods > 0 ? Math.round((masteredMods / totalMods) * 100) : 0;
       const masteredCountEl = document.getElementById('masteredCountText');
       const totalThemesEl = document.getElementById('totalThemesCountText');
@@ -2715,8 +2899,7 @@
         const mm = String(calViewMonth + 1).padStart(2, '0');
         const dd = String(day).padStart(2, '0');
         const iso = `${calViewYear}-${mm}-${dd}`;
-        const dayOfWeek = new Date(calViewYear, calViewMonth, day).getDay(); // 0 = Sun, 6 = Sat
-        const isSunday = dayOfWeek === 0;
+        const isOffDay = isDateScheduledOff(iso);
         const isToday = iso === todayISO;
         const target = getTargetMinutesForDate(iso);
         const log = appState.dailyLogs[iso] || { minutes: 0, completed: false };
@@ -2744,10 +2927,10 @@
         } else if (isPartial) {
           cellClasses = 'bg-sky-50 border-sky-300 text-sky-900 hover:bg-sky-100';
           statusDotHtml = `<span class="w-2 h-2 rounded-full bg-amber-400 inline-block shrink-0" title="Sesi Berjalan"></span>`;
-        } else if (isSunday) {
-          cellClasses = 'bg-rose-50/70 border-rose-200/80 text-rose-700 hover:border-rose-400';
-          statusDotHtml = `<span class="w-2 h-2 rounded-full bg-rose-400 inline-block shrink-0" title="Minggu Off"></span>`;
-          subLabelHtml = `<span class="text-[9px] font-bold text-rose-500 leading-none">Off</span>`;
+        } else if (isOffDay) {
+          cellClasses = 'bg-rose-50/80 border-rose-200 text-rose-700 hover:border-rose-400';
+          statusDotHtml = `<span class="w-2 h-2 rounded-full bg-rose-500 inline-block shrink-0" title="Jadwal Off"></span>`;
+          subLabelHtml = `<span class="text-[9px] font-extrabold text-rose-600 leading-none">Off</span>`;
         }
 
         const todayRing = isToday ? 'ring-2 ring-navy-900 ring-offset-1' : '';
@@ -3200,8 +3383,9 @@
     }
 
     function getModuleStatus(mod) {
-      const doneCount = mod.steps.filter(Boolean).length;
-      if (doneCount === 6) return 'MASTERED';
+      const steps = normalizeModuleSteps(mod.steps);
+      const doneCount = steps.filter(Boolean).length;
+      if (doneCount === 7) return 'MASTERED';
       if (doneCount > 0) return 'IN_PROGRESS';
       return 'NOT_STARTED';
     }
@@ -3209,10 +3393,10 @@
     function toggleModuleStep(modId, stepIndex) {
       const mod = appState.modules.find(m => m.id === modId);
       if (!mod) return;
+      mod.steps = normalizeModuleSteps(mod.steps);
       mod.steps[stepIndex] = !mod.steps[stepIndex];
-      if (stepIndex === 5 && mod.steps[5]) {
-        mod.steps = [true, true, true, true, true, true];
-        showToast(`Selamat! "${mod.title}" berstatus MASTERED!`, '🏆');
+      if (mod.steps.every(Boolean)) {
+        showToast(`Selamat! "${mod.title}" 100% Selesai - Mastered!`, '🏆');
       }
       saveState();
       renderModules();
@@ -3252,9 +3436,11 @@
       };
 
       container.innerHTML = filtered.map(mod => {
+        mod.steps = normalizeModuleSteps(mod.steps);
         const status = getModuleStatus(mod);
         const doneCount = mod.steps.filter(Boolean).length;
-        const pct = Math.round((doneCount / 6) * 100);
+        const pct = Math.round((doneCount / 7) * 100);
+        const isAllMastered = doneCount === 7;
         const pBadge = phaseBadgeMap[mod.phase] || phaseBadgeMap.FASE1_TWK;
         const safeCat = mod.category === 'TO' ? 'TKP' : mod.category;
         const escapedMat = mod.materialLabel.replace(/'/g, "\\'");
@@ -3266,18 +3452,18 @@
           statusBadge = `<span class="px-2.5 py-1 rounded-lg text-[11px] font-bold bg-emerald-100 text-emerald-800">Mastered ✓ (Lanjut Tema Berikutnya)</span>`;
         } else if (status === 'IN_PROGRESS') {
           cardBorder = 'border-sky-300';
-          statusBadge = `<span class="px-2.5 py-1 rounded-lg text-[11px] font-bold bg-sky-100 text-sky-800">Sedang Dipelajari (${doneCount}/6)</span>`;
+          statusBadge = `<span class="px-2.5 py-1 rounded-lg text-[11px] font-bold bg-sky-100 text-sky-800">Sedang Dipelajari (${doneCount}/7)</span>`;
         }
 
         const stepsHtml = STEP_LABELS.map((label, idx) => {
           const checked = mod.steps[idx];
           return `
-            <button onclick="toggleModuleStep('${mod.id}', ${idx})"
-              class="flex items-center justify-center gap-1.5 px-2.5 py-2 rounded-xl border text-xs font-bold transition select-none
+            <button type="button" onclick="toggleModuleStep('${mod.id}', ${idx})"
+              class="w-full flex items-center justify-start text-left gap-2 px-3 py-2 rounded-xl border text-xs font-bold transition select-none
               ${checked
                 ? 'bg-emerald-600 border-emerald-600 text-white shadow-sm'
                 : 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100'}">
-              <span>${checked ? '✓' : '○'}</span>
+              <span class="shrink-0">${checked ? '✓' : '○'}</span>
               <span class="truncate">${label}</span>
             </button>
           `;
@@ -3287,6 +3473,10 @@
         for (let d = 1; d <= 30; d++) {
           durationOptionsHtml += `<option value="${d}" ${Number(mod.durationDays) === d ? 'selected' : ''}>${d} Hari</option>`;
         }
+
+        const bottomProgressLabel = isAllMastered
+          ? `<span class="font-extrabold text-emerald-700 shrink-0 self-end sm:self-start">100% Selesai - Mastered</span>`
+          : `<span class="font-extrabold text-navy-800 shrink-0 self-end sm:self-start">${pct}% Selesai</span>`;
 
         return `
           <div class="bg-white rounded-2xl border ${cardBorder} p-4 sm:p-5 shadow-sm transition hover:shadow-md">
@@ -3320,13 +3510,13 @@
               </div>
             </div>
 
-            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 mt-3.5">
+            <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2 mt-3.5">
               ${stepsHtml}
             </div>
 
             <div class="mt-3 pt-2.5 border-t border-slate-100 flex flex-col sm:flex-row sm:items-start justify-between gap-2 text-xs text-slate-600">
               <span class="leading-relaxed break-words">💡 ${mod.notes}</span>
-              <span class="font-extrabold text-navy-800 shrink-0 self-end sm:self-start">${pct}% Selesai</span>
+              ${bottomProgressLabel}
             </div>
           </div>
         `;
@@ -3664,7 +3854,9 @@
         ...appState,
         ...pendingRestorePayload,
         customTitle: pendingRestorePayload.customTitle || 'JUDUL TULIS DISINI',
+        modules: normalizeModulesList(pendingRestorePayload.modules),
         dailyLogs: pendingRestorePayload.dailyLogs || {},
+        offSchedule: normalizeOffSchedule(pendingRestorePayload.offSchedule),
         errorLogs: Array.isArray(pendingRestorePayload.errorLogs) ? pendingRestorePayload.errorLogs : [],
         flashcards: Array.isArray(pendingRestorePayload.flashcards) ? pendingRestorePayload.flashcards : [],
         timerModeMinutes: [30, 60, 90, 120].includes(Number(pendingRestorePayload.timerModeMinutes)) ? Number(pendingRestorePayload.timerModeMinutes) : 30
@@ -3704,6 +3896,10 @@
         },
         modules: JSON.parse(JSON.stringify(INITIAL_MODULES)),
         dailyLogs: {},
+        offSchedule: {
+          recurringDays: [0],
+          customDates: []
+        },
         errorLogs: [],
         flashcards: [],
         trackerFilterPhase: 'ALL',
